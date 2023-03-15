@@ -1,5 +1,5 @@
 import { formatLocale } from "d3-format";
-import converter from "number-to-words";
+import converter from "./number-to-words.js";
 import MagicNumber from "./magic-number.js";
 import MagicObject from "./magic-object.js";
 
