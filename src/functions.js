@@ -1,7 +1,7 @@
 import { formatLocale } from "d3-format";
 import converter from "number-to-words";
-import MagicNumber from "./magic-number";
-import MagicObject from "./magic-object";
+import MagicNumber from "./magic-number.js";
+import MagicObject from "./magic-object.js";
 
 const f = formatLocale({
 	"decimal": ".",

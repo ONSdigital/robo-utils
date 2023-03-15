@@ -1,5 +1,5 @@
-import { getCodeKey } from "./functions";
-import MagicNumber from "./magic-number";
+import { getCodeKey } from "./functions.js";
+import MagicNumber from "./magic-number.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {

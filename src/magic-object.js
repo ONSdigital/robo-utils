@@ -1,4 +1,4 @@
-import { getName, getCode } from "./functions";
+import { getName, getCode } from "./functions.js";
 
 export default class MagicObject {
 	constructor(obj) {

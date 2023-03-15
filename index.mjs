@@ -1,6 +1,6 @@
-export { default as MagicArray } from "./src/magic-array";
-export { default as MagicObject } from "./src/magic-object";
-export { default as MagicNumber } from "./src/magic-number";
+export { default as MagicArray } from "./src/magic-array.js";
+export { default as MagicObject } from "./src/magic-object.js";
+export { default as MagicNumber } from "./src/magic-number.js";
 export { 
   getNameKey,
   getCodeKey, 
@@ -11,4 +11,4 @@ export {
   moreLess,
   capitalise,
   autoType
-} from "./src/functions";
+} from "./src/functions.js";

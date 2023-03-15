@@ -1,4 +1,4 @@
-import { format, toWords } from "./functions";
+import { format, toWords } from "./functions.js";
 
 export default class MagicNumber extends Number {
 	format(str = ",", si = "long") {
