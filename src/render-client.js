@@ -73,7 +73,7 @@ export default function renderClient(template, place, places, lookup, plaintext 
     }
     return str;
   } catch (error) {
-    console.error(error);
+    console.warn(error);
     return "";
   }
 }
