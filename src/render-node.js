@@ -4,7 +4,7 @@ import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
 // Cycle through LAs (and null for "no area selected")
-export default function renderNode(place, places, lookup) {
+export default function renderNode(template, place, places, lookup) {
   // Render PUG template with data for selected LA
   let sections_raw = render(template, {
     place,
