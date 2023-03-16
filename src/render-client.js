@@ -1,7 +1,7 @@
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
-export function renderClient(template, place, places, lookup, rosae = window.rosaenlg_en_US, plaintext = false) {
+export default function renderClient(template, place, places, lookup, rosae = window.rosaenlg_en_US, plaintext = false) {
   try {
     let str = rosae.render(template, {
       place,
