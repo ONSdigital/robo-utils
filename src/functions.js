@@ -1,7 +1,7 @@
 import { formatLocale } from "d3-format";
-import converter from "./number-to-words.js";
-import MagicNumber from "./magic-number.js";
-import MagicObject from "./magic-object.js";
+import converter from './number-to-words';
+import MagicNumber from "./magic-number";
+import MagicObject from "./magic-object";
 
 const f = formatLocale({
 	"decimal": ".",
@@ -29,6 +29,9 @@ export function autoType(object) {
   }
   return new MagicObject(object);
 }
+
+// https://github.com/d3/d3-dsv/issues/45
+const fixtz = new Date("2019-01-01T00:00").getHours() || new Date("2019-07-01T00:00").getHours();
 
 export function round(val, dp) {
 	let divisor = Math.pow(10, dp);
@@ -74,23 +77,51 @@ export function formatName(name, context = null) {
 }
 
 export function getCodeKey(obj) {
-	return Object.keys(obj)
-		.find(key => key.toLowerCase() === "areacd" || key.toLowerCase() === "code" || key.toLowerCase().slice(-2) === "cd");
+	const keys = Object.keys(obj);
+	const lc = keys.map(key => key.toLowerCase());
+	for (let key of ["areacd", "code", "id"]) {
+		let i = lc.indexOf(key);
+		if (i > -1) return keys[i];
+	}
+	let key = lc.find(key => key.toLowerCase().slice(-2) === "cd");
+	return key ? key : keys[0];
 }
 
 export function getNameKey(obj) {
-	return Object.keys(obj)
-		.find(key => key.toLowerCase() === "hclnm" || key.toLowerCase() === "areanm" || key.toLowerCase() === "name" || key.toLowerCase().slice(-2) === "nm");
+	const keys = Object.keys(obj);
+	const lc = keys.map(key => key.toLowerCase());
+	for (let key of ["areanm", "name", "label"]) {
+		let i = lc.indexOf(key);
+		if (i > -1) return keys[i];
+	}
+	let key = lc.find(key => key.toLowerCase().slice(-2) === "nm");
+	return key ? key : keys[0];
+}
+
+export function getParentKey(obj) {
+	const keys = Object.keys(obj);
+	const lc = keys.map(key => key.toLowerCase());
+	for (let key of ["parent", "parentcd", "regioncd", "region"]) {
+		let i = lc.indexOf(key);
+		console.log(i)
+		if (i > -1) return keys[i];
+	};
+	return null;
 }
 
 export function getName(place, context = null) {
-	let nameKey = getNameKey(place);
+	const nameKey = getNameKey(place);
 	return formatName(place[nameKey], context);
 }
 
 export function getCode(place) {
-	let codeKey = getCodeKey(place);
+	const codeKey = getCodeKey(place);
 	return place[codeKey];
+}
+
+export function getParent(place) {
+	const parentKey = getParentKey(place);
+	return place[parentKey];
 }
 
 export function moreLess(diff, texts = ["more", "less", "the same"]) {

@@ -1,3 +1,6 @@
+// Code copied from https://github.com/marlun78/number-to-words/
+// Version 1.2.4
+
 // Simplified https://gist.github.com/marlun78/885eb0021e980c6ce0fb
 function isFinite(value) {
   return !(typeof value !== 'number' || value !== value || value === Infinity || value === -Infinity);

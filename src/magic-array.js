@@ -1,5 +1,4 @@
-import { getCodeKey } from "./functions.js";
-import MagicNumber from "./magic-number.js";
+import MagicNumber from "./magic-number";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
@@ -9,10 +8,8 @@ export default class MagicArray extends Array {
 						a[key] == null || b[key] == null ? NaN : b[key] < a[key] ? -1 : b[key] > a[key] ? 1 : b[key] >= a[key] ? 0 : NaN);
 	}
 	getRank(item, key, order = "descending") {
-		const codeKey = getCodeKey(item);
-		if (!codeKey) codeKey = Object.keys(item)[0];
 		const sorted = this.sortBy(key, order);
-		return new MagicNumber(sorted.map(d => d[codeKey]).indexOf(item[codeKey]) + 1);
+		return new MagicNumber(sorted.map(d => d[key]).indexOf(item[key]) + 1);
 	}
 	filterBy(key, val) {
 		return this.filter(d => d[key] === val);

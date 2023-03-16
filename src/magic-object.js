@@ -1,4 +1,4 @@
-import { getName, getCode } from "./functions.js";
+import { getName, getCode, getParent } from "./functions";
 
 export default class MagicObject {
 	constructor(obj) {
@@ -9,5 +9,12 @@ export default class MagicObject {
 	}
 	getCode() {
 		return getCode(this);
+	}
+	getCountry() {
+		const countries = {"E": "E92000001", "N": "N92000002", "S": "S92000003", "W": "W92000004"};
+		return countries[this.getCode()[0]];
+	}
+	getParent() {
+		return getParent(this);
 	}
 }
