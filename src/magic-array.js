@@ -1,4 +1,4 @@
-import MagicNumber from "./magic-number";
+import MagicNumber from "./magic-number.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
