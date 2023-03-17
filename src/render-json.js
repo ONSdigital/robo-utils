@@ -69,8 +69,7 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
         subsections.push(child);
       } else if (child.tagName == "PROP" && child.getAttribute("class")) {
         let prop = child.getAttribute("class");
-        let val =
-          prop == child.innerText.includes("|") ?
+        let val = child.innerText.includes("|") ?
             child.innerText.split("|") :
             child.innerText;
         obj[prop] = val;
