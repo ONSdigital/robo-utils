@@ -1,4 +1,4 @@
-import { format, toWords, round } from "./functions.js";
+import { format, toWords, round, abs } from "./functions.js";
 
 export default class MagicNumber extends Number {
 	format(str = ",", si = "long") {
@@ -8,7 +8,7 @@ export default class MagicNumber extends Number {
 		return toWords(this, type, dropFirst, threshold);
 	}
 	abs() {
-		return Math.abs(this);
+		return abs(this);
 	}
 	round(dp) {
 		return round(this, dp);

@@ -36,10 +36,12 @@ export function autoType(object) {
 
 export function round(val, dp) {
 	let multiplier = Math.pow(10, -dp);
-	return Math.round(val / multiplier) * multiplier;
+	return new MagicNumber(Math.round(val / multiplier) * multiplier);
 }
 
-export const abs = Math.abs;
+export function abs(val) {
+	return new MagicNumber(Math.abs(val));
+}
 
 export function format(val, str = ",", si = "long") {
 	let dp = str.match(/-\d+(?=f)/);
