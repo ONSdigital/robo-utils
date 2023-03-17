@@ -1,12 +1,11 @@
-import { render } from "rosaenlg";
 import { parse } from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
 // Cycle through LAs (and null for "no area selected")
-export default function renderNode(template, place, places, lookup) {
+export default function render(template, place, places, lookup, rosae = window.rosaenlg_en_US) {
   // Render PUG template with data for selected LA
-  let sections_raw = render(template, {
+  let sections_raw = rosae.render(template, {
     place,
     places,
     lookup,
@@ -50,7 +49,13 @@ export default function renderNode(template, place, places, lookup) {
   // Process HTML output of RosaeNLG into structured JSON
   let sections = [];
   let notes = [];
-  let root = parse(sections_raw); // Convert HTML string into DOM-type object for parsing
+  let root = document ?
+    (() => {
+      let el = document.createElement('div');
+      el.innerHTML = sections_raw;
+      return el.firstChild;
+    })() :
+    parse(sections_raw); // Convert HTML string into DOM-type object for parsing
 
   function parseSection(node) {
     let obj = {};

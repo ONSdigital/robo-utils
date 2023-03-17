@@ -24,14 +24,15 @@ export function autoType(object) {
       if (fixtz && !!m[4] && !m[7]) value = value.replace(/-/g, "/").replace(/T/, " ");
       value = new Date(value);
     }
+		else if (key.slice(-6) === "_array" || value.includes("|")) {
+			value = value.split("|");
+			if (!value[value.length - 1]) value.pop();
+		}
     else continue;
     object[key] = value;
   }
   return new MagicObject(object);
 }
-
-// https://github.com/d3/d3-dsv/issues/45
-const fixtz = new Date("2019-01-01T00:00").getHours() || new Date("2019-07-01T00:00").getHours();
 
 export function round(val, dp) {
 	let divisor = Math.pow(10, dp);
@@ -48,11 +49,12 @@ export function format(val, str = ",", si = "long") {
 	return output;
 }
 
-export function toWords(val, type = "cardinal", dropFirst = true, threshold = 9) {
-	return dropFirst && val === 1 && type === "ordinal" ? "" :
-		val <= threshold && type === "ordinal" ? converter.toWordsOrdinal(val) :
+export function toWords(val, type = "cardinal", options = {threshold: 9, keepFirst: false}) {
+	const isWords = val <= options.threshold || options.threshold === -1 || !options.threshold;
+	return !options.keepFirst && val === 1 && type === "ordinal" ? "" :
+		isWords && type === "ordinal" ? converter.toWordsOrdinal(val) :
 		type === "ordinal" ? converter.toOrdinal(val) :
-		val <= threshold ? converter.toWords(val) :
+		isWords ? converter.toWords(val) :
 		format(Math.floor(val));
 }
 
@@ -101,7 +103,7 @@ export function getNameKey(obj) {
 export function getParentKey(obj) {
 	const keys = Object.keys(obj);
 	const lc = keys.map(key => key.toLowerCase());
-	for (let key of ["parent", "parentcd", "regioncd", "region"]) {
+	for (let key of ["parentcd", "parent", "regioncd", "region"]) {
 		let i = lc.indexOf(key);
 		console.log(i)
 		if (i > -1) return keys[i];
