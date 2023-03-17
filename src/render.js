@@ -1,4 +1,4 @@
-import { parse } from "node-html-parser";
+import HTMLparser from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
@@ -55,7 +55,7 @@ export default function render(template, place, places, lookup, rosae = window.r
       el.innerHTML = sections_raw;
       return el.firstChild;
     })() :
-    parse(sections_raw); // Convert HTML string into DOM-type object for parsing
+    HTMLparser.parse(sections_raw); // Convert HTML string into DOM-type object for parsing
 
   function parseSection(node) {
     let obj = {};
