@@ -25,7 +25,7 @@ export function autoType(object) {
       value = new Date(value);
     }
 		else if (key.slice(-6) === "_array" || value.includes("|")) {
-			value = value.split("|");
+			value = typeof value === "string" ? value.split("|") : [];
 			if (!value[value.length - 1]) value.pop();
 		}
     else continue;
@@ -34,12 +34,12 @@ export function autoType(object) {
   return new MagicObject(object);
 }
 
-export const abs = Math.abs;
-
 export function round(val, dp) {
 	let multiplier = Math.pow(10, -dp);
 	return Math.round(val / multiplier) * multiplier;
 }
+
+export const abs = Math.abs;
 
 export function format(val, str = ",", si = "long") {
 	let dp = str.match(/-\d+(?=f)/);
