@@ -58,6 +58,17 @@ export function toWords(val, type = "cardinal", options = {threshold: 9, keepFir
 		format(Math.floor(val));
 }
 
+export function toList (array, key, separator = [", ", " and "]) {
+	const words = array.map(d => d[key]);
+	return words.length < 2 ? words.join() :
+		Array.isArray(separator) ?
+		[
+			...[words.slice(0, -1).join(separator[0])],
+			...words.slice(-1)
+		].join(separator[1 % separator.length]) :
+		words.join(separator);
+}
+
 export function formatName(name, context = null) {
   name = name.replace("&", "and").replace(", City of", "").replace(", County of", "");
 	let lc = name.toLowerCase();

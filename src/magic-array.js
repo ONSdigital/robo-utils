@@ -1,4 +1,5 @@
 import MagicNumber from "./magic-number.js";
+import { toList } from "./functions.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
@@ -11,14 +12,7 @@ export default class MagicArray extends Array {
 		return this.filter(d => d[key] === val);
 	}
 	toList (key, separator = [", ", " and "]) {
-		const words = this.map(d => d[key]);
-		return words.length < 2 ? words.join() :
-			Array.isArray(separator) ?
-			[
-				...[words.slice(0, -1).join(separator[0])],
-				...words.slice(-1)
-			].join(separator[1 % separator.length]) :
-			words.join(separator);
+		return toList(this, key, separator);
 	}
 	getRank(item, key, order = "descending") {
 		const sorted = this.sortBy(key, order);

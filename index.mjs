@@ -7,9 +7,13 @@ export {
   getCode,
   getName,
   getParent,
+  getCodeKey,
+  getNameKey,
+  getParentKey,
   formatName,
   format,
   toWords,
+  toList,
   moreLess,
   capitalise,
   autoType
