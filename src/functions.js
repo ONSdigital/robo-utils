@@ -34,9 +34,11 @@ export function autoType(object) {
   return new MagicObject(object);
 }
 
+export const abs = Math.abs;
+
 export function round(val, dp) {
-	let divisor = Math.pow(10, dp);
-	return Math.round(val * divisor) / divisor;
+	let multiplier = Math.pow(10, -dp);
+	return Math.round(val / multiplier) * multiplier;
 }
 
 export function format(val, str = ",", si = "long") {

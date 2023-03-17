@@ -12,6 +12,8 @@ export {
   getParentKey,
   formatName,
   format,
+  round,
+  abs,
   toWords,
   toList,
   moreLess,
