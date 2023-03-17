@@ -1,7 +1,7 @@
 export { default as MagicArray } from "./src/magic-array.js";
 export { default as MagicObject } from "./src/magic-object.js";
 export { default as MagicNumber } from "./src/magic-number.js";
-export { default as render } from "./src/render.js";
+export { default as renderJSON } from "./src/render-json.js";
 export { default as renderHTML } from "./src/render-html.js";
 export { 
   getCode,

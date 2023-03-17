@@ -3,12 +3,12 @@ import * as functions from "./functions.js";
 
 function parseClient(string) {
   let el = document.createElement('div');
-  el.innerHTML = sections_raw;
+  el.innerHTML = string;
   return el.firstChild;
 }
 
 // Cycle through LAs (and null for "no area selected")
-export default function render(template, place, places, lookup, rosae = window.rosaenlg_en_US, parse = parseClient) {
+export default function renderJSON(template, place, places, lookup, rosae = window.rosaenlg_en_US, parse = parseClient) {
   // Render PUG template with data for selected LA
   let sections_raw = rosae.render(template, {
     place,
