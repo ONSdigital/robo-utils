@@ -118,7 +118,6 @@ export function getParentKey(obj) {
 	const lc = keys.map(key => key.toLowerCase());
 	for (let key of ["parentcd", "parent", "regioncd", "region"]) {
 		let i = lc.indexOf(key);
-		console.log(i)
 		if (i > -1) return keys[i];
 	};
 	return null;
