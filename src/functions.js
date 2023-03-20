@@ -54,7 +54,8 @@ export function format(val, str = ",", si = "long") {
 }
 
 export function toWords(val, type = "cardinal", options = {threshold: 9, keepFirst: false}) {
-	const isWords = val <= options.threshold || options.threshold === -1 || !options.threshold;
+	const threshold = !options.threshold && options.threshold !== 0 ? 9 : options.threshold;
+	const isWords = val <= threshold || threshold === -1;
 	return !options.keepFirst && val === 1 && type === "ordinal" ? "" :
 		isWords && type === "ordinal" ? converter.toWordsOrdinal(val) :
 		type === "ordinal" ? converter.toOrdinal(val) :
