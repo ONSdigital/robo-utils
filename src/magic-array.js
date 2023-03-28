@@ -1,5 +1,5 @@
 import MagicNumber from "./magic-number.js";
-import { toList } from "./functions.js";
+import { toList, toData } from "./functions.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
@@ -13,6 +13,9 @@ export default class MagicArray extends Array {
 	}
 	toList (key, separator = [", ", " and "]) {
 		return toList(this, key, separator);
+	}
+	toData (props) {
+		return toData(this, props);
 	}
 	getRank(item, key, order = "descending") {
 		const sorted = this.sortBy(key, order);

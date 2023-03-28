@@ -16,6 +16,7 @@ export {
   abs,
   toWords,
   toList,
+  toData,
   moreLess,
   capitalise,
   autoType

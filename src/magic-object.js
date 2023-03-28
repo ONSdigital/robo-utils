@@ -1,4 +1,4 @@
-import { getName, getCode, getParent } from "./functions.js";
+import { getName, getCode, getParent, toData } from "./functions.js";
 
 export default class MagicObject {
 	constructor(obj) {
@@ -16,5 +16,8 @@ export default class MagicObject {
 	}
 	getParent() {
 		return getParent(this);
+	}
+	toData (props) {
+		return toData([this], props);
 	}
 }

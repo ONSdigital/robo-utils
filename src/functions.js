@@ -36,12 +36,10 @@ export function autoType(object) {
 
 export function round(val, dp) {
 	let multiplier = Math.pow(10, -dp);
-	return new MagicNumber(Math.round(val / multiplier) * multiplier);
+	return Math.round(val / multiplier) * multiplier;
 }
 
-export function abs(val) {
-	return new MagicNumber(Math.abs(val));
-}
+export const abs = Math.abs;
 
 export function format(val, str = ",", si = "long") {
 	let dp = str.match(/-\d+(?=f)/);
@@ -54,8 +52,7 @@ export function format(val, str = ",", si = "long") {
 }
 
 export function toWords(val, type = "cardinal", options = {threshold: 9, keepFirst: false}) {
-	const threshold = !options.threshold && options.threshold !== 0 ? 9 : options.threshold;
-	const isWords = val <= threshold || threshold === -1;
+	const isWords = val <= options.threshold || options.threshold === -1 || !options.threshold;
 	return !options.keepFirst && val === 1 && type === "ordinal" ? "" :
 		isWords && type === "ordinal" ? converter.toWordsOrdinal(val) :
 		type === "ordinal" ? converter.toOrdinal(val) :
@@ -145,6 +142,31 @@ export function moreLess(diff, texts = ["more", "less", "the same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
 
-export function capitalise(str) {
-  return str[0].toUpperCase() + str.slice(1);
+export function toData(arr, props) {
+	let _props = [];
+	["x", "y", "z", "r"].forEach(prop => {
+		if (props[prop]) _props.push({
+			key: prop,
+			value: props[prop],
+			type: Array.isArray(props[prop]) && !props[prop].every(val => arr[0][val]) ? "label": "key"
+		});
+	});
+	const propsUni = _props.filter(p => typeof p.value === "string")
+	const propsMulti = _props.filter(p => Array.isArray(p.value));
+	let data = [];
+	arr.forEach(d => {
+		let row = {};
+		let rows = [];
+		propsUni.forEach(p => row[p.key] = d[p.value]);
+		if (propsMulti[0]) {
+			for (let i = 0; i < propsMulti[0].value.length; i++) {
+				let rowNew = {...row};
+				propsMulti.forEach(p => rowNew[p.key] = p.type === "label" ? p.value[i] : d[p.value[i]]);
+				rows.push(rowNew);
+			}
+		}
+		if (rows[0]) data = [...data, ...rows];
+		else data.push(row);
+	});
+	return JSON.stringify(data);
 }

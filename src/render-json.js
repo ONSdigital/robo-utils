@@ -72,10 +72,14 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
           subsections.push(child);
         } else if (child.tagName == "PROP" && child.getAttribute("class")) {
           let prop = child.getAttribute("class");
-          let val = child.innerText.includes("|") ?
+          if (prop === "data") {
+            obj[prop] = JSON.parse(val);
+          } else {
+            let val = child.innerText.includes("|") ?
               child.innerText.split("|") :
               child.innerText;
-          obj[prop] = val;
+            obj[prop] = val;
+          }
         } else {
           content += child.outerHTML;
         }
