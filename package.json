@@ -1,6 +1,6 @@
 {
   "name": "@onsvisual/robo-utils",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "Utilities for robo-journalism.",
   "main": "index.mjs",
   "type": "module",

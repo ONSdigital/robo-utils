@@ -39,7 +39,7 @@ export function round(val, dp) {
 	return Math.round(val / multiplier) * multiplier;
 }
 
-export const abs = Math.abs;
+export const abs = (val) => new MagicNumber(Math.abs(val));
 
 export function format(val, str = ",", si = "long") {
 	let dp = str.match(/-\d+(?=f)/);
@@ -142,7 +142,7 @@ export function moreLess(diff, texts = ["more", "less", "the same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
 
-export function toData(arr, props) {
+export function toData(arr, props, mode = null) {
 	let _props = [];
 	["x", "y", "z", "r"].forEach(prop => {
 		if (props[prop]) _props.push({
@@ -168,5 +168,7 @@ export function toData(arr, props) {
 		if (rows[0]) data = [...data, ...rows];
 		else data.push(row);
 	});
-	return JSON.stringify(data);
+	return mode === "protect" ? `§${JSON.stringify(data)}§` :
+    mode === "stringify" ? JSON.stringify(data) :
+    data;
 }

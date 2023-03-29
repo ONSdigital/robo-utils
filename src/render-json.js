@@ -2,6 +2,13 @@ import parse from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
+const unescapeHTML = (escaped) => escaped
+  .replace(/&amp;/g, "&")
+  .replace(/&lt;/g, "<")
+  .replace(/&gt;/g, ">")
+  .replace(/&quot;/g, "\"")
+  .replace(/&#039;/g, "'");
+
 // Cycle through LAs (and null for "no area selected")
 export default function renderJSON(template, place, places, lookup, rosae = window.rosaenlg_en_US) {
   // Arrays to hold content
@@ -9,6 +16,12 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
   let notes = [];
 
   try {
+    // Fix .toData() functions
+    let funcs = template.match(/(?<=\.toData\().*?(?=\))/g);
+    if (Array.isArray(funcs)) {
+      funcs.forEach(f => template = template.replace(f, `${f}, "protect"`));
+    }
+
     // Render PUG template with data for selected LA
     let sections_raw = rosae.render(template, {
       place,
@@ -68,7 +81,7 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
         } else if (child.tagName == "PROP" && child.getAttribute("class")) {
           let prop = child.getAttribute("class");
           if (prop === "data") {
-            obj[prop] = JSON.parse(val);
+            obj[prop] = JSON.parse(unescapeHTML(child.innerText));
           } else {
             let val = child.innerText.includes("|") ?
               child.innerText.split("|") :
@@ -107,8 +120,8 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
       notes.push(node._rawText.replaceAll("<! --", "").replaceAll("-->", ""));
     });
   }
-  catch {
-    console.warn(`PUG error. No HTML generated for ${place ? place.getName("the") : `no area selected`}`)
+  catch (err) {
+    console.warn(`PUG error. No HTML generated for ${place ? place.getName("the") : `no area selected`}`, err);
   }
 
   // Build the data object to be saved to JSON

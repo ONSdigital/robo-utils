@@ -17,7 +17,7 @@ export default class MagicObject {
 	getParent() {
 		return getParent(this);
 	}
-	toData (props) {
-		return toData([this], props);
+	toData (props, mode = null) {
+		return toData([this], props, mode);
 	}
 }

@@ -14,8 +14,8 @@ export default class MagicArray extends Array {
 	toList (key, separator = [", ", " and "]) {
 		return toList(this, key, separator);
 	}
-	toData (props) {
-		return toData(this, props);
+	toData (props, mode = null) {
+		return toData(this, props, mode);
 	}
 	getRank(item, key, order = "descending") {
 		const sorted = this.sortBy(key, order);
