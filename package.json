@@ -1,6 +1,6 @@
 {
   "name": "@onsvisual/robo-utils",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Utilities for robo-journalism.",
   "main": "index.mjs",
   "type": "module",
@@ -21,6 +21,7 @@
     "rosaenlg": "^4.0.0"
   },
   "peerDependencies": {
+    "d3-dsv": "^3.0.1",
     "d3-format": "^3.1.0",
     "node-html-parser": "^6.1.5",
     "parse-color": "^1.0.0"

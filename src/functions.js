@@ -1,7 +1,10 @@
+import { csvParse } from "d3-dsv";
 import { formatLocale } from "d3-format";
 import converter from './number-to-words.js';
 import MagicNumber from "./magic-number.js";
 import MagicObject from "./magic-object.js";
+import MagicArray from "./magic-array.js";
+import { csvParse } from "d3-dsv";
 
 const f = formatLocale({
 	"decimal": ".",
@@ -142,6 +145,10 @@ export function moreLess(diff, texts = ["more", "less", "the same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
 
+export function capitalise(str) {
+  return str[0].toUpperCase() + str.slice(1);
+}
+
 export function toData(arr, props, mode = null) {
 	let _props = [];
 	["x", "y", "z", "r"].forEach(prop => {
@@ -171,4 +178,9 @@ export function toData(arr, props, mode = null) {
 	return mode === "protect" ? `§${JSON.stringify(data)}§` :
     mode === "stringify" ? JSON.stringify(data) :
     data;
+}
+
+export async function getData(url) {
+	const data = csvParse(await (await fetch(url)).text(), autoType);
+	return new MagicArray(...data);
 }
