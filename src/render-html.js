@@ -6,6 +6,8 @@ export default function renderHTML(template, place, places, lookup, plaintext = 
     let str = rosae.render(template, {
       place,
       places,
+      row: place,
+      rows: places,
       lookup,
       ...functions,
       language: "en_US",

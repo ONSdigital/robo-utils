@@ -26,6 +26,8 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
     let sections_raw = rosae.render(template, {
       place,
       places,
+      row: place,
+      rows: places,
       lookup,
       ...functions,
       language: "en_US",
