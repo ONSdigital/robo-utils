@@ -1,15 +1,12 @@
 import MagicNumber from "./magic-number.js";
-import { toList, toData } from "./functions.js";
+import { toList, toData, ascending, descending } from "./functions.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
-		return new MagicArray(...this)
-			.sort((a, b) => order === "ascending" ?
-						a[key] == null || b[key] == null ? NaN : a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : a[key] >= b[key] ? 0 : NaN :
-						a[key] == null || b[key] == null ? NaN : b[key] < a[key] ? -1 : b[key] > a[key] ? 1 : b[key] >= a[key] ? 0 : NaN);
+		return order === "ascending" ? this.ascending(key) : this.descending(key);
 	}
 	filterBy(key, val) {
-		return this.filter(d => d[key] === val);
+		return new MagicArray(this.filter(d => d[key] === val));
 	}
 	toList (key, separator = [", ", " and "]) {
 		return toList(this, key, separator);
@@ -22,17 +19,17 @@ export default class MagicArray extends Array {
 		return new MagicNumber(sorted.map(d => d[key]).indexOf(item[key]) + 1);
 	}
 	ascending(key) {
-		return this.sortBy(key, "ascending");
+		return new MagicArray([...this].sort((a, b) => ascending(a[key], b[key])));
 	}
 	descending(key) {
-		return this.sortBy(key, "descending");
+		return new MagicArray([...this].sort((a, b) => descending(a[key], b[key])));
 	}
 	top(key, n = 1) {
-		const sorted = this.sortBy(key, "descending");
+		const sorted = this.descending(key);
 		return n === 1 ? sorted[0] : sorted.slice(0, n);
 	}
 	bottom(key, n = 1) {
-		const sorted = this.sortBy(key, "ascending");
+		const sorted = this.ascending(key);
 		return n === 1 ? sorted[0] : sorted.slice(0, n);
 	}
 	trim(n) {

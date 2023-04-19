@@ -184,3 +184,11 @@ export async function getData(url) {
 	const data = csvParse(await (await fetch(url)).text(), autoType);
 	return new MagicArray(...data);
 }
+
+export function ascending(a, b) {
+	return a[key] == null || b[key] == null ? NaN : a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : a[key] >= b[key] ? 0 : NaN;
+}
+
+export function descending(a, b) {
+	return a[key] == null || b[key] == null ? NaN : b[key] < a[key] ? -1 : b[key] > a[key] ? 1 : b[key] >= a[key] ? 0 : NaN;
+}
