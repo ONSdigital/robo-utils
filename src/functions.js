@@ -185,9 +185,9 @@ export async function getData(url) {
 }
 
 export function ascending(a, b) {
-	return a[key] == null || b[key] == null ? NaN : a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : a[key] >= b[key] ? 0 : NaN;
+	return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
 export function descending(a, b) {
-	return a[key] == null || b[key] == null ? NaN : b[key] < a[key] ? -1 : b[key] > a[key] ? 1 : b[key] >= a[key] ? 0 : NaN;
+	return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
 }
