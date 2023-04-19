@@ -4,7 +4,6 @@ import converter from './number-to-words.js';
 import MagicNumber from "./magic-number.js";
 import MagicObject from "./magic-object.js";
 import MagicArray from "./magic-array.js";
-import { csvParse } from "d3-dsv";
 
 const f = formatLocale({
 	"decimal": ".",
