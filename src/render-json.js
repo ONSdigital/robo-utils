@@ -1,4 +1,4 @@
-import parse from "node-html-parser";
+import { parse } from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
