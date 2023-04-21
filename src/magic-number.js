@@ -4,8 +4,8 @@ export default class MagicNumber extends Number {
 	format(str = ",", si = "long") {
 		return format(this, str, si);
 	}
-	toWords(type = "cardinal", dropFirst = true, threshold = 9) {
-		return toWords(this, type, dropFirst, threshold);
+	toWords(type = "cardinal") {
+		return toWords(this, type);
 	}
 	abs() {
 		return abs(this);
