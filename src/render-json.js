@@ -44,7 +44,6 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
 
     // Remove spaces between numbers in data
     sections_raw = sections_raw.replace(/((?<=:\d{1}.)|(?<=:\d{2}.)|(?<=:\d{3}.)|(?<=:\d{4}.)|(?<=:\d{5}.)|(?<=:\d{6}.)|(?<=:\d{7}.)|(?<=:\d{8}.)|(?<=:\d{9}.)|(?<=:\d{10}.))\s(?=\d)/g, "");
-    console.log("render-json", funcs, template, sections_raw);
 
     // Process <mark> tags for text colour contrast
     // This might be better handled in the HTML parser
