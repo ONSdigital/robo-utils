@@ -29,8 +29,8 @@ export default class MagicArray extends Array {
 		return n === 1 ? sorted[0] : sorted.slice(0, n);
 	}
 	bottom(key, n = 1) {
-		const sorted = this.ascending(key);
-		return n === 1 ? sorted[0] : sorted.slice(0, n);
+		const sorted = this.descending(key);
+		return n === 1 ? sorted[sorted.length - 1] : sorted.slice(-n);
 	}
 	trim(n) {
 		return n >= 0 ?

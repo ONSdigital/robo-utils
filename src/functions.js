@@ -38,7 +38,7 @@ export function autoType(object) {
 
 export function round(val, dp) {
 	let multiplier = Math.pow(10, -dp);
-	return Math.round(val / multiplier) * multiplier;
+	return new MagicNumber(Math.round(val / multiplier) * multiplier);
 }
 
 export const abs = (val) => new MagicNumber(Math.abs(val));
@@ -74,6 +74,7 @@ export function toList (array, key, separator = [", ", " and "]) {
 }
 
 export function formatName(name, context = null) {
+	if (name === "East") name = "East of England";
   name = name.replace("&", "and").replace(", City of", "").replace(", County of", "");
 	let lc = name.toLowerCase();
   let island = lc.startsWith("isle");
