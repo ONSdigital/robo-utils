@@ -20,5 +20,7 @@ export {
   toData,
   moreLess,
   capitalise,
-  autoType
+  autoType,
+  ascending,
+  descending
 } from "./src/functions.js";
