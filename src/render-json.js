@@ -7,8 +7,8 @@ const unescapeHTML = (escaped) => escaped
   .replace(/&lt;/g, "<")
   .replace(/&gt;/g, ">")
   .replace(/&quot;/g, "\"")
-  .replace(/&#039;/g, "'");
-  // .replace(/(?<=\d.)\s(?=\d)/g, "");
+  .replace(/&#039;/g, "'")
+  .replace(/(?<=\d.)\s(?=\d)/g, "");
 
 // Cycle through LAs (and null for "no area selected")
 export default function renderJSON(template, place, places, lookup, rosae = window.rosaenlg_en_US) {
@@ -42,9 +42,6 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
       /((?<=<\/span>)|(?<=<\/mark>)|(?<=<\/strong>)|(?<=<\/em>)|(?<=<\/[abi]>))(?![\.,<:;])/g,
       " "
     );
-
-    // Remove spaces between numbers in data
-    sections_raw = sections_raw.replace(/((?<=:\d{1}.)|(?<=:\d{2}.)|(?<=:\d{3}.)|(?<=:\d{4}.)|(?<=:\d{5}.)|(?<=:\d{6}.)|(?<=:\d{7}.)|(?<=:\d{8}.)|(?<=:\d{9}.)|(?<=:\d{10}.))\s(?=\d)/g, "");
 
     // Process <mark> tags for text colour contrast
     // This might be better handled in the HTML parser
