@@ -23,7 +23,7 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
 
   try {
     // Fix .toData() functions
-    let funcs = template.match(/(?<=\.toData\().*?(?=\))/g);
+    let funcs = template.match(/(?<=\.toData\().*?((?=\)\r\n)|(?=\)\n))/g);
     if (Array.isArray(funcs)) {
       funcs = Array.from(new Set(funcs));
       funcs.forEach(f => template = template.replaceAll(f, `${f}, "protect"`));
