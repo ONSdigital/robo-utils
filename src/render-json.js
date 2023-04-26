@@ -1,6 +1,9 @@
-import { parse } from "node-html-parser";
+import * as parser from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
+
+const parse = parser?.default?.parse ? parser.default.parse :
+  parser?.parse ? parser.parse : parser;
 
 const unescapeHTML = (escaped) => escaped
   .replace(/&amp;/g, "&")
@@ -8,6 +11,8 @@ const unescapeHTML = (escaped) => escaped
   .replace(/&gt;/g, ">")
   .replace(/&quot;/g, "\"")
   .replace(/&#039;/g, "'")
+  .replace(/&lt;/g, "<")
+  .replace(/&gt;/g, ">")
   .replace(/(?<=\d.)\s(?=\d)/g, "");
 
 // Cycle through LAs (and null for "no area selected")
