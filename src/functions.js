@@ -141,7 +141,7 @@ export function getParent(place) {
 	return place[parentKey];
 }
 
-export function moreLess(diff, texts = ["more", "less", "the same"]) {
+export function moreLess(diff, texts = ["more", "less", "same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
 
