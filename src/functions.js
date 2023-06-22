@@ -64,7 +64,8 @@ export function toWords(val, type = "cardinal", options = {threshold: 9, keepFir
 }
 
 export function toList (array, key, separator = [", ", " and "]) {
-	const words = array.map(d => d[key]);
+	const map = typeof key === "function" ? key : (d) => d[key];
+	const words = array.map(map);
 	return words.length < 2 ? words.join() :
 		Array.isArray(separator) ?
 		[
