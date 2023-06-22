@@ -109,7 +109,7 @@ export function getCodeKey(obj) {
 export function getNameKey(obj) {
 	const keys = Object.keys(obj);
 	const lc = keys.map(key => key.toLowerCase());
-	for (let key of ["areanm", "name", "label"]) {
+	for (let key of ["hclnm", "areanm", "name", "label", "areacd"]) {
 		let i = lc.indexOf(key);
 		if (i > -1) return keys[i];
 	}
