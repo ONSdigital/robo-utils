@@ -22,5 +22,6 @@ export {
   capitalise,
   autoType,
   ascending,
-  descending
+  descending,
+  aAn
 } from "./src/functions.js";
