@@ -81,8 +81,8 @@ export function formatName(name, context = null) {
 	let lc = name.toLowerCase();
   let island = lc.startsWith("isle");
   let the = [
-    "north east", "north west", "east midlands", "west midlands", "east of england", "south east",
-		"south west", "derbyshire dales"
+    "united kingdom", "north east", "north west", "east midlands", "west midlands",
+		"east of england", "south east", "south west", "derbyshire dales"
   ].includes(lc) || 
     lc.startsWith("city of") || 
     lc.startsWith("vale of");
