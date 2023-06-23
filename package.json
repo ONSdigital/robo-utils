@@ -23,7 +23,6 @@
   "peerDependencies": {
     "d3-dsv": "^3.0.1",
     "d3-format": "^3.1.0",
-    "indefinite": "^2.4.3",
     "node-html-parser": "^6.1.5",
     "parse-color": "^1.0.0"
   }
