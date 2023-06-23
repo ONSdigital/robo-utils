@@ -1,6 +1,6 @@
 import { csvParse } from "d3-dsv";
 import { formatLocale } from "d3-format";
-import AvsAnSimple from "./bundled/AvsAn-simple.js";
+import * as articles from "articles";
 import converter from './number-to-words.js';
 import MagicNumber from "./magic-number.js";
 import MagicObject from "./magic-object.js";
@@ -195,4 +195,4 @@ export function descending(a, b) {
 	return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
 }
 
-export const aAn = (str) => `${AvsAnSimple.query(str)} ${str}`;
+export const aAn = (str) => `${articles.find(str)} ${str}`;
