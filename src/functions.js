@@ -150,7 +150,7 @@ export function moreLess(diff, texts = ["more", "less", "same"]) {
 }
 
 export function capitalise(str) {
-  return str[0].toUpperCase() + str.slice(1);
+  return str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 }
 
 export function toData(arr, props, mode = null) {
