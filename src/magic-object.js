@@ -4,8 +4,8 @@ export default class MagicObject {
 	constructor(obj) {
     Object.assign(this, obj);
   }
-	getName(context = null) {
-		return getName(this, context);
+	getName(context = null, mode = "default") {
+		return getName(this, context, mode);
 	}
 	getCode() {
 		return getCode(this);

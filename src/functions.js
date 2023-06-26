@@ -75,9 +75,11 @@ export function toList (array, key, separator = [", ", " and "]) {
 		words.join(separator);
 }
 
-export function formatName(name, context = null) {
+// If mode !== "default", function only returns prefix
+export function formatName(name, context = null, mode = "default") {
 	if (name === "East") name = "East of England";
   name = name.replace("&", "and").replace(", City of", "").replace(", County of", "");
+	let prefix = "";
 	let lc = name.toLowerCase();
   let island = lc.startsWith("isle");
   let the = [
@@ -87,13 +89,13 @@ export function formatName(name, context = null) {
     lc.startsWith("city of") || 
     lc.startsWith("vale of");
   if (["in", "the"].includes(context)) {
-    if (island || the) name = "the " + name;
+    if (island || the) prefix = "the ";
   }
   if (context === "in") {
-    if (island) name = "on " + name;
-    else name = "in " + name;
+    if (island) prefix = "on " + prefix;
+    else prefix = "in " + prefix;
   }
-  return name;
+  return mode === "default" ? prefix + name : prefix.slice(0, -1);
 }
 
 export function getCodeKey(obj) {
@@ -128,9 +130,9 @@ export function getParentKey(obj) {
 	return null;
 }
 
-export function getName(place, context = null) {
+export function getName(place, context = null, mode = "default") {
 	const nameKey = getNameKey(place);
-	return formatName(place[nameKey], context);
+	return formatName(place[nameKey], context, mode);
 }
 
 export function getCode(place) {
@@ -195,4 +197,7 @@ export function descending(a, b) {
 	return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
 }
 
-export const aAn = (str) => `${articles.find(str)} ${str}`;
+// If mode !== "default", function only returns article
+export const aAn = (str, mode = "default") => mode === "default" ?
+	`${articles.find(str)} ${str}` :
+	articles.find(str);
