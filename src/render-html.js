@@ -1,9 +1,9 @@
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
 
-export default function renderHTML(template, place, places, lookup, plaintext = false, rosae = window.rosaenlg_en_US) {
+export default function renderHTML(template, place, places, lookup, plaintext = false, pug = window.pug) {
   try {
-    let str = rosae.render(template, {
+    let str = pug.render(template, {
       place,
       places,
       row: place,

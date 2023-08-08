@@ -16,7 +16,7 @@ const unescapeHTML = (escaped) => escaped
   .replace(/(?<=\d.)\s(?=\d)/g, "");
 
 // Cycle through LAs (and null for "no area selected")
-export default function renderJSON(template, place, places, lookup, rosae = window.rosaenlg_en_US) {
+export default function renderJSON(template, place, places, lookup, pug = window.pug) {
   // Arrays to hold content
   let sections = [];
   let notes = [];
@@ -26,11 +26,11 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
     let funcs = template.match(/(?<=\.toData\().*?((?=\)\r\n)|(?=\)\n))/g);
     if (Array.isArray(funcs)) {
       funcs = Array.from(new Set(funcs));
-      funcs.forEach(f => template = template.replaceAll(f, `${f}, "protect"`));
+      funcs.forEach(f => template = template.replaceAll(f, `${f}, "stringify"`));
     }
 
     // Render PUG template with data for selected LA
-    let sections_raw = rosae.render(template, {
+    let sections_raw = pug.render(template, {
       place,
       places,
       row: place,
@@ -39,7 +39,7 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
       ...functions,
       language: "en_US",
     });
-    // Fix to remove spaces added between numbers and prefix/suffix symbols by RosaeNLG
+    // Fix to remove spaces added between numbers and prefix/suffix symbols by Rosae
     sections_raw = sections_raw.replace(/(?<=\d)\s+((?=%)|(?=p{2}))/g, "");
     sections_raw = sections_raw.replace(/(?<=[£€\$])\s+(?=\d)/g, "");
     // Fix to add spaces after closing </mark> </em> or <strong> tags unless followed by one of . , <
@@ -73,7 +73,7 @@ export default function renderJSON(template, place, places, lookup, rosae = wind
       }
     }
 
-    // Process HTML output of RosaeNLG into structured JSON
+    // Process HTML output of Pug into structured JSON
     let root = parse(sections_raw); // Convert HTML string into DOM-type object for parsing
 
     function parseSection(node) {
