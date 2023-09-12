@@ -1,11 +1,11 @@
 {
   "name": "@onsvisual/robo-utils",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "description": "Utilities for robo-journalism.",
   "main": "index.mjs",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "parse-color": "^1.0.0"
   },
   "devDependencies": {
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "vitest": "^0.34.4"
   }
 }

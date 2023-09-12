@@ -1,5 +1,5 @@
 import MagicNumber from "./magic-number.js";
-import { toList, toData, ascending, descending } from "./functions.js";
+import { toList, toData, ascending, descending, addToArray } from "./functions.js";
 
 export default class MagicArray extends Array {
 	sortBy(key, order = "ascending") {
@@ -24,13 +24,25 @@ export default class MagicArray extends Array {
 	descending(key) {
 		return new MagicArray(...[...this].sort((a, b) => descending(a[key], b[key])));
 	}
-	top(key, n = 1) {
+	top(key, n = 1, add = null) {
 		const sorted = this.descending(key);
-		return n === 1 ? sorted[0] : sorted.slice(0, n);
+		const sliced = sorted.slice(0, n);
+		if (add) {
+			addToArray(sliced, add);
+		}
+		return sliced.length === 1 ? sliced[0] :
+			sliced.length === n ? sliced :
+			sliced.descending(key);
 	}
-	bottom(key, n = 1) {
+	bottom(key, n = 1, add = null) {
 		const sorted = this.descending(key);
-		return n === 1 ? sorted[sorted.length - 1] : sorted.slice(-n);
+		const sliced = sorted.slice(-n);
+		if (add) {
+			addToArray(sliced, add);
+		}
+		return sliced.length === 1 ? sliced[0] :
+			sliced.length === n ? sliced :
+			sliced.descending(key);
 	}
 	trim(n) {
 		return n >= 0 ?

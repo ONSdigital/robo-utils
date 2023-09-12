@@ -56,7 +56,7 @@ export function format(val, str = ",", si = "long") {
 
 export function toWords(val, type = "cardinal", options = {threshold: 9, keepFirst: false}) {
 	const isWords = val <= options.threshold || options.threshold === -1 || !options.threshold;
-	return !options.keepFirst && val === 1 && type === "ordinal" ? "" :
+	return !options.keepFirst && +val === 1 && type === "ordinal" ? "" :
 		isWords && type === "ordinal" ? converter.toWordsOrdinal(val) :
 		type === "ordinal" ? converter.toOrdinal(val) :
 		isWords ? converter.toWords(val) :
@@ -195,6 +195,12 @@ export function ascending(a, b) {
 
 export function descending(a, b) {
 	return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
+}
+
+export function addToArray(arr, item) {
+	const codeKey = getCodeKey(item);
+	if (!arr.map(d => d[codeKey]).includes(item[codeKey])) arr.push(item);
+	return arr;
 }
 
 // If mode !== "default", function only returns article
