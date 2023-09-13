@@ -17,16 +17,16 @@ const lookup = (() => {
   return lkp;
 })();
 
-test('toWords(1, "ordinal") should be ""', () => {
-  expect(robo.toWords(1, "ordinal")).toBe("");
+test('toWords(1, "ordinal", {dropFirst: true}) should be ""', () => {
+  expect(robo.toWords(1, "ordinal", {dropFirst: true})).toBe("");
 });
 
 test('10 toWords(10, "ordinal") should be "10th"', () => {
   expect(robo.toWords(10, "ordinal")).toBe("10th");
 });
 
-test('Ordinal rank for Birmingham population should be ""', () => {
-  expect(places.getRank(lookup["Birmingham"], "population_2011").toWords("ordinal")).toBe("");
+test('Ordinal rank for Birmingham population should be "first"', () => {
+  expect(places.getRank(lookup["Birmingham"], "population_2011").toWords("ordinal")).toBe("first");
 });
 
 test('Top two places by population plus Rutland', () => {
