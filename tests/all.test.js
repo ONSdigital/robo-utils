@@ -36,3 +36,23 @@ test('Top two places by population plus Rutland', () => {
 test('Bottom two places by population plus Rutland', () => {
   expect(places.bottom("population_2011", 2, lookup["Rutland"])).toEqual([lookup["Rutland"], lookup["City of London"], lookup["Isles of Scilly"]]);
 });
+
+test('Bottom three places by population minus Isles of Scilly', () => {
+  expect(places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"])).toEqual([lookup["West Somerset"], lookup["City of London"]]);
+});
+
+test('-1 is less than 0 using breaksToWords()', () => {
+  expect(robo.breaksToWords(-1)).toEqual("less");
+});
+
+test('5 is "about the same" as 4 to 6 using breaksToWords()', () => {
+  expect(robo.breaksToWords(5, [4, 6], ["less", "about the same", "more"])).toEqual("about the same");
+});
+
+test('4 is "roughly about the same" as 4 to 6 using breaksToWords()', () => {
+  expect(robo.breaksToWords(6, [4, 6], ["less", "about the same", "more"], "roughly")).toEqual("roughly about the same");
+});
+
+test('6 is "roughly about the same" as 4 to 6 using breaksToWords()', () => {
+  expect(robo.breaksToWords(6, [4, 6], ["less", "about the same", "more"], "roughly")).toEqual("roughly about the same");
+});

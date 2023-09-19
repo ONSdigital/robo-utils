@@ -151,6 +151,15 @@ export function moreLess(diff, texts = ["more", "less", "same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
 
+export function breaksToWords(value, breaks = [0], texts = ["less", "more"], quantifier = null) {
+	if (quantifier && value === breaks[breaks.length - 1]) return `${quantifier} ${texts[texts.length - 2]}`;
+	for (let i = 0; i < breaks.length; i ++) {
+		if (quantifier && value === breaks[i]) return `${quantifier} ${texts[i + 1]}`;
+		if (value <= breaks[i]) return texts[i];
+	}
+	return texts[texts.length - 1];
+}
+
 export function capitalise(str) {
   return str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 }
@@ -199,10 +208,21 @@ export function descending(a, b) {
 	return a == null || b == null ? NaN : b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
 }
 
-export function addToArray(arr, item) {
-	const codeKey = getCodeKey(item);
-	if (!arr.map(d => d[codeKey]).includes(item[codeKey])) arr.push(item);
-	return arr;
+export function addToArray(arr, items) {
+	const arr_new = [...arr];
+	const _items = Array.isArray(items) ? items : [items];
+	const codeKey = getCodeKey(_items[0]);
+	for (const item of _items) {
+		if (!arr_new.map(d => d[codeKey]).includes(item[codeKey])) arr_new.push(item);
+	}
+	return arr_new;
+}
+
+export function removeFromArray(arr, items) {
+	const _items = Array.isArray(items) ? items : [items];
+	const codeKey = getCodeKey(_items[0]);
+	const codes = _items.map(d => d[codeKey]);
+	return arr.filter(d => !codes.includes(d[codeKey]));
 }
 
 // If mode !== "default", function only returns article

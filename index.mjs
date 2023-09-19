@@ -19,6 +19,7 @@ export {
   toList,
   toData,
   moreLess,
+  breaksToWords,
   capitalise,
   autoType,
   ascending,
