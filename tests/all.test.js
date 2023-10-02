@@ -56,3 +56,7 @@ test('4 is "roughly about the same" as 4 to 6 using breaksToWords()', () => {
 test('6 is "roughly about the same" as 4 to 6 using breaksToWords()', () => {
   expect(robo.breaksToWords(6, [4, 6], ["less", "about the same", "more"], "roughly")).toEqual("roughly about the same");
 });
+
+test("formatName('name', 'its') for name ending in an s should return s', not s's", () => {
+  expect(robo.formatName("Derbyshire Dales", "its")).toBe("the Derbyshire Dales'");
+});

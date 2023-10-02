@@ -90,13 +90,15 @@ export function formatName(name, context = null, mode = "default") {
   ].includes(lc) || 
     lc.startsWith("city of") || 
     lc.startsWith("vale of");
-  if (["in", "the"].includes(context)) {
+  if (["in", "the", "its"].includes(context)) {
     if (island || the) prefix = "the ";
   }
   if (context === "in") {
     if (island) prefix = "on " + prefix;
     else prefix = "in " + prefix;
-  }
+  } else if (context === "its") {
+		name = name + (name.slice(-1) === "s" ? "'" : "'s");
+	}
   return mode === "default" ? prefix + name : prefix.slice(0, -1);
 }
 
