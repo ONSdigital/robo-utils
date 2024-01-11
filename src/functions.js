@@ -168,7 +168,7 @@ export function capitalise(str) {
 
 export function toData(arr, props, mode = null) {
 	let _props = [];
-	["x", "y", "z", "r"].forEach(prop => {
+	Object.keys(props).forEach(prop => {
 		if (props[prop]) _props.push({
 			key: prop,
 			value: props[prop],
