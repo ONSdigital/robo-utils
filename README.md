@@ -1,6 +1,6 @@
 # @onsvisual/robo-utils
 
-[![npm version](https://badge.fury.io/js/@onsvisual%2Fsvelte-components.svg)](https://www.npmjs.com/package/@onsvisual/robo-utils)
+[![npm version](https://badge.fury.io/js/@onsvisual%2Frobo-utils.svg)](https://www.npmjs.com/package/@onsvisual/robo-utils)
 
 Utilities to make semi-automated journalism a bit easier. Can be used in any Javascript project (web browser or NodeJS) that is set up to use NPM packages.
 
