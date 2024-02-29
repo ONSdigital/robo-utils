@@ -1,5 +1,6 @@
 import { csvParse } from "d3-dsv";
 import { formatLocale } from "d3-format";
+import { roundTo } from "round-to";
 import * as articles from "articles";
 import converter from './number-to-words.js';
 import MagicNumber from "./magic-number.js";
@@ -37,10 +38,7 @@ export function autoType(object) {
   return new MagicObject(object);
 }
 
-export function round(val, dp) {
-	let multiplier = Math.pow(10, -dp);
-	return new MagicNumber(Math.round(val / multiplier) * multiplier);
-}
+export const round = roundTo;
 
 export const abs = (val) => new MagicNumber(Math.abs(val));
 

@@ -60,3 +60,11 @@ test('6 is "roughly about the same" as 4 to 6 using breaksToWords()', () => {
 test("formatName('name', 'its') for name ending in an s should return s', not s's", () => {
   expect(robo.formatName("Derbyshire Dales", "its")).toBe("the Derbyshire Dales'");
 });
+
+test("round(123.4567, 2) should return 123.46", () => {
+  expect(robo.round(123.4567, 2)).toBe(123.46);
+});
+
+test("round(123.4567, -2) should return 100", () => {
+  expect(robo.round(123.4567, -2)).toBe(100);
+});
