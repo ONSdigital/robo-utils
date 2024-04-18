@@ -167,34 +167,41 @@ export function capitalise(str) {
 }
 
 export function toData(arr, props, mode = null) {
-	let _props = [];
-	Object.keys(props).forEach(prop => {
-		if (props[prop]) _props.push({
-			key: prop,
-			value: props[prop],
-			type: Array.isArray(props[prop]) && !props[prop].every(val => arr[0][val]) ? "label": "key"
+	try {
+		let _props = [];
+		Object.keys(props).forEach(prop => {
+			if (props[prop]) _props.push({
+				key: prop,
+				value: props[prop],
+				type: Array.isArray(props[prop]) && !props[prop].every(val => arr[0][val]) ? "label": "key"
+			});
 		});
-	});
-	const propsUni = _props.filter(p => typeof p.value === "string")
-	const propsMulti = _props.filter(p => Array.isArray(p.value));
-	let data = [];
-	arr.forEach(d => {
-		let row = {};
-		let rows = [];
-		propsUni.forEach(p => row[p.key] = d[p.value]);
-		if (propsMulti[0]) {
-			for (let i = 0; i < propsMulti[0].value.length; i++) {
-				let rowNew = {...row};
-				propsMulti.forEach(p => rowNew[p.key] = p.type === "label" ? p.value[i] : d[p.value[i]]);
-				rows.push(rowNew);
+		const propsUni = _props.filter(p => typeof p.value === "string")
+		const propsMulti = _props.filter(p => Array.isArray(p.value));
+		let data = [];
+		arr.forEach(d => {
+			let row = {};
+			let rows = [];
+			propsUni.forEach(p => row[p.key] = d[p.value]);
+			if (propsMulti[0]) {
+				for (let i = 0; i < propsMulti[0].value.length; i++) {
+					let rowNew = {...row};
+					propsMulti.forEach(p => rowNew[p.key] = p.type === "label" ? p.value[i] : d[p.value[i]]);
+					rows.push(rowNew);
+				}
 			}
-		}
-		if (rows[0]) data = [...data, ...rows];
-		else data.push(row);
-	});
-	return mode === "protect" ? `§${JSON.stringify(data)}§` :
-    mode === "stringify" ? JSON.stringify(data) :
-    data;
+			if (rows[0]) data = [...data, ...rows];
+			else data.push(row);
+		});
+		return mode === "protect" ? `§${JSON.stringify(data)}§` :
+			mode === "stringify" ? JSON.stringify(data) :
+			data;
+	} catch (err) {
+		console.warn("Could not generate data", {arr, props}, err);
+		return mode === "protect" ? `§${JSON.stringify([])}§` :
+			mode === "stringify" ? JSON.stringify([]) :
+			[];
+	}
 }
 
 export async function getData(url) {
