@@ -68,3 +68,11 @@ test("round(123.4567, 2) should return 123.46", () => {
 test("round(123.4567, -2) should return 100", () => {
   expect(robo.round(123.4567, -2)).toBe(100);
 });
+
+test("format(1234.567, ',.2f') should return 1,234.57", () => {
+  expect(robo.format(1234.567, ',.2f')).toBe("1,234.57");
+});
+
+test("format(1234.567, ',.-2f') should return 1,200", () => {
+  expect(robo.format(1234.567, ',.-2f')).toBe("1,200");
+});

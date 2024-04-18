@@ -38,14 +38,16 @@ export function autoType(object) {
   return new MagicObject(object);
 }
 
+export const isNumeric = (val) => isFinite(val) && val !== null;
+
 export const round = roundTo;
 
 export const abs = (val) => new MagicNumber(Math.abs(val));
 
 export function format(val, str = ",", si = "long") {
-	let dp = str.match(/-\d+(?=f)/);
+	let dp = str.match(/-\d+(?=f)/)?.[0];
 	let output;
-	if (dp) output = f(str.replace(`${dp}`, "0"))(round(val, dp));
+	if (isNumeric(dp)) output = f(str.replace(`${dp}`, "0"))(round(val, +dp));
 	else output = f(str)(val);
 	if (si === "long") output = output.replace("k", " thousand").replace("M", " million").replace("G", " billion").replace("T", " trillion");
 	else output = output.replace("M", "mn").replace("G", "bn").replace("T", "tn");
