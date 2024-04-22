@@ -6,7 +6,7 @@ export default class MagicArray extends Array {
 		return order === "ascending" ? this.ascending(key) : this.descending(key);
 	}
 	filterBy(key, val) {
-		return new MagicArray(...this.filter(d => d[key] === val));
+		return this.filter(d => d[key] === val);
 	}
 	toList (key, separator = [", ", " and "]) {
 		return toList(this, key, separator);
@@ -19,16 +19,16 @@ export default class MagicArray extends Array {
 		return new MagicNumber(sorted.map(d => d[key]).indexOf(item[key]) + 1);
 	}
 	add(items) {
-		return new MagicArray(...addToArray(this, items));
+		return addToArray(MagicArray.from(this), items);
 	}
 	remove(items) {
-		return new MagicArray(...removeFromArray(this, items));
+		return removeFromArray(this, items);
 	}
 	ascending(key) {
-		return new MagicArray(...[...this].sort((a, b) => ascending(a[key], b[key])));
+		return MagicArray.from(this).sort((a, b) => ascending(a[key], b[key]));
 	}
 	descending(key) {
-		return new MagicArray(...[...this].sort((a, b) => descending(a[key], b[key])));
+		return MagicArray.from(this).sort((a, b) => descending(a[key], b[key]));
 	}
 	top(key, n = 1, add = null) {
 		let sorted = this.descending(key).slice(0, n);
@@ -54,6 +54,6 @@ export default class MagicArray extends Array {
 			this.slice(Math.floor(n));
 	}
 	flip() {
-		return new MagicArray(...[...this].reverse());
+		return MagicArray.from(this).reverse();
 	}
 }

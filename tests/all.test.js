@@ -1,10 +1,9 @@
 import { expect, test } from 'vitest'
-import { csvParse } from 'd3-dsv';
 import MagicArray from '../src/magic-array.js';
 import * as robo from "./src/functions.js";
 import data_raw from "./data.js";
 
-const data = new MagicArray(...csvParse(data_raw, robo.autoType));
+const data = MagicArray.from(robo.csvParse(data_raw));
 const places = data.filter(d => ["E06", "E07", "E08", "E09", "W06"].includes(d.areacd.slice(0, 3))).sortBy("areanm");
 const place = places[0];
 const lookup = (() => {

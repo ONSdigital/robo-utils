@@ -1,4 +1,4 @@
-import { csvParse } from "d3-dsv";
+import { csvParse as csvP } from "d3-dsv";
 import { formatLocale } from "d3-format";
 import { roundTo } from "round-to";
 import * as articles from "articles";
@@ -14,7 +14,9 @@ const f = formatLocale({
   "currency": ["£", ""]
 }).format;
 
-// Adapted from d3.autoType
+const stripBom = (str) => str.charCodeAt(0) === 0xFEFF ? str.slice(1) : str;
+
+// Adapted from d3.autoType to inject special robo-utils "magic" types
 export function autoType(object) {
 	const fixtz = new Date("2019-01-01T00:00").getHours() || new Date("2019-07-01T00:00").getHours();
   for (var key in object) {
@@ -44,6 +46,7 @@ export const round = roundTo;
 
 export const abs = (val) => new MagicNumber(Math.abs(val));
 
+// Extended d3-format function to allow negative DPs and presentational SI units
 export function format(val, str = ",", si = "long") {
 	let dp = str.match(/-\d+(?=f)/)?.[0];
 	let output;
@@ -204,9 +207,11 @@ export function toData(arr, props, mode = null) {
 	}
 }
 
+export const csvParse = (str, row = autoType) => csvP(stripBom(str), row);
+
 export async function getData(url) {
-	const data = csvParse(await (await fetch(url)).text(), autoType);
-	return new MagicArray(...data);
+	const data = csvParse(await (await fetch(url)).text());
+	return MagicArray.from(data);
 }
 
 export function ascending(a, b) {
@@ -218,13 +223,12 @@ export function descending(a, b) {
 }
 
 export function addToArray(arr, items) {
-	const arr_new = [...arr];
 	const _items = Array.isArray(items) ? items : [items];
 	const codeKey = getCodeKey(_items[0]);
 	for (const item of _items) {
-		if (!arr_new.map(d => d[codeKey]).includes(item[codeKey])) arr_new.push(item);
+		if (!arr.map(d => d[codeKey]).includes(item[codeKey])) arr.push(item);
 	}
-	return arr_new;
+	return arr;
 }
 
 export function removeFromArray(arr, items) {
