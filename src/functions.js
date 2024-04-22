@@ -14,7 +14,8 @@ const f = formatLocale({
   "currency": ["£", ""]
 }).format;
 
-const stripBom = (str) => str.charCodeAt(0) === 0xFEFF ? str.slice(1) : str;
+// Strip invisible byte-order mark common in CSV files
+const stripBOM = (str) => str.charCodeAt(0) === 0xFEFF ? str.slice(1) : str;
 
 // Adapted from d3.autoType to inject special robo-utils "magic" types
 export function autoType(object) {
@@ -40,6 +41,7 @@ export function autoType(object) {
   return new MagicObject(object);
 }
 
+// Reliable way to check if a variable is a non-null number
 export const isNumeric = (val) => isFinite(val) && val !== null;
 
 export const round = roundTo;
@@ -209,8 +211,10 @@ export function toData(arr, props, mode = null) {
 	}
 }
 
-export const csvParse = (str, row = autoType) => csvP(stripBom(str), row);
+// Modifed d3.csvParse to strip byte order mark (BOM) and apply robo-utils autoType by default
+export const csvParse = (str, row = autoType) => csvP(stripBOM(str), row);
 
+// Fetch raw CSV file and return a MagicArray
 export async function getData(url) {
 	const data = csvParse(await (await fetch(url)).text());
 	return MagicArray.from(data);
