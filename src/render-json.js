@@ -18,8 +18,11 @@ const unescapeHTML = (escaped) => escaped
 // Cycle through LAs (and null for "no area selected")
 export default function renderJSON(template, place, places, lookup, pug = window.pug) {
   // Arrays to hold content
-  let sections = [];
-  let notes = [];
+  const sections = [];
+  const notes = [];
+
+  // Error message for invalid outputs (where pug renderer has thrown an error)
+  let error;
 
   try {
     // Fix .toData() functions
@@ -130,17 +133,19 @@ export default function renderJSON(template, place, places, lookup, pug = window
     });
   }
   catch (err) {
+    error = err.toString();
     console.warn(`PUG error. No HTML generated for ${place ? place.getName("the") : `no area selected`}`, err);
   }
 
   // Build the data object to be saved to JSON
-  let data = { sections };
+  const data = { sections };
   if (place) data.place = place;
   if (place && lookup[place.getParent()])
     data.region = lookup[place.getParent()];
   if (place && lookup[place.getCountry()])
     data.ctry = lookup[place.getCountry()];
   if (notes[0]) data.notes = notes;
+  if (error) data.error = error;
 
   return data;
 }
