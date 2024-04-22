@@ -75,3 +75,7 @@ test("format(1234.567, ',.2f') should return 1,234.57", () => {
 test("format(1234.567, ',.-2f') should return 1,200", () => {
   expect(robo.format(1234.567, ',.-2f')).toBe("1,200");
 });
+
+test("Top 3 places by population to data", () => {
+  expect(places.top("population_2011", 3).toData({x: "population_2011", y: "areanm"})).toEqual(["Birmingham", "Leeds", "Sheffield"].map(nm => ({x: lookup[nm].population_2011, y: nm})));
+})

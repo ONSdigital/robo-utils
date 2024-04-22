@@ -195,7 +195,7 @@ export function toData(arr, props, mode = null) {
 					rows.push(rowNew);
 				}
 			}
-			if (Array.isArray(rows)) {
+			if (rows[0]) {
 				for (const r of rows) data.push(r);
 			}
 			else data.push(row);
