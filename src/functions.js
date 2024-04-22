@@ -172,30 +172,32 @@ export function capitalise(str) {
 export function toData(arr, props, mode = null) {
 	try {
 		let _props = [];
-		Object.keys(props).forEach(prop => {
+		for (const prop of Object.keys(props)) {
 			if (props[prop]) _props.push({
 				key: prop,
 				value: props[prop],
 				type: Array.isArray(props[prop]) && !props[prop].every(val => arr[0][val]) ? "label": "key"
 			});
-		});
+		}
 		const propsUni = _props.filter(p => typeof p.value === "string")
 		const propsMulti = _props.filter(p => Array.isArray(p.value));
 		let data = [];
-		arr.forEach(d => {
+		for (const d of arr) {
 			let row = {};
 			let rows = [];
-			propsUni.forEach(p => row[p.key] = d[p.value]);
+			for (const p of propsUni) row[p.key] = d[p.value];
 			if (propsMulti[0]) {
 				for (let i = 0; i < propsMulti[0].value.length; i++) {
 					let rowNew = {...row};
-					propsMulti.forEach(p => rowNew[p.key] = p.type === "label" ? p.value[i] : d[p.value[i]]);
+					for (const p of propsMulti) rowNew[p.key] = p.type === "label" ? p.value[i] : d[p.value[i]];
 					rows.push(rowNew);
 				}
 			}
-			if (rows[0]) data = [...data, ...rows];
+			if (Array.isArray(rows)) {
+				for (const r of rows) data.push(r);
+			}
 			else data.push(row);
-		});
+		}
 		return mode === "protect" ? `§${JSON.stringify(data)}§` :
 			mode === "stringify" ? JSON.stringify(data) :
 			data;
