@@ -21,6 +21,7 @@ export {
   moreLess,
   breaksToWords,
   capitalise,
+  csvParse,
   autoType,
   ascending,
   descending,
