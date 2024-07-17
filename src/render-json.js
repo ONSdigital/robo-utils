@@ -97,7 +97,7 @@ export default function renderJSON(template, place, places, lookup, pug = window
           } else {
             let val = child.innerText.includes("|") ?
               child.innerText.split("|") :
-              child.innerText;
+              child.innerHTML;
             obj[prop] = val;
           }
         } else {
