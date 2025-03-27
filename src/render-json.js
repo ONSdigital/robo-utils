@@ -1,6 +1,7 @@
 import * as parser from "node-html-parser";
 import parseColor from "parse-color";
 import * as functions from "./functions.js";
+import MagicArray from "./magic-array.js";
 
 const parse = parser?.default?.parse ? parser.default.parse :
   parser?.parse ? parser.parse : parser;
@@ -40,6 +41,7 @@ export default function renderJSON(template, place, places, lookup, pug = window
       rows: places,
       lookup,
       ...functions,
+      MagicArray,
       language: "en_US",
     });
     // Fix to remove spaces added between numbers and prefix/suffix symbols by Rosae
