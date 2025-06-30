@@ -182,30 +182,138 @@ Render Pug template to structured JSON.
 - Input: Pug template, place data, places array, lookup object, Pug instance
 - Output: Structured JSON object with sections, place data, and metadata
 
-## Usage Patterns
+# robo-utils Usage Examples
 
-### Basic Number Formatting
+## Text and Number Formatting
+
+### Converting Numbers to Words
+
 ```javascript
-import { MagicNumber } from '@onsvisual/robo-utils';
-const num = new MagicNumber(1234567);
-console.log(num.format()); // "1,234,567"
-console.log(num.format(".2s")); // "1.23 million"
+// Basic ordinal conversion
+robo.toWords(10, "ordinal")
+// Returns: "10th"
+
+// Ordinal with dropFirst option
+robo.toWords(1, "ordinal", {dropFirst: true})
+// Returns: "" (empty string for first when dropped)
+
+// Get rank as ordinal word
+places.getRank(lookup["Birmingham"], "population_2011").toWords("ordinal")
+// Returns: "first"
 ```
 
-### Array Processing
+### Rounding Numbers
+
 ```javascript
-import { MagicArray } from '@onsvisual/robo-utils';
-const data = MagicArray.from([
-  {name: "London", population: 9000000},
-  {name: "Birmingham", population: 1100000}
-]);
-const top = data.top("population");
-console.log(top.getName()); // "London"
+// Round to 2 decimal places
+robo.round(123.4567, 2)
+// Returns: 123.46
+
+// Round to nearest hundred (negative precision)
+robo.round(123.4567, -2)
+// Returns: 100
 ```
 
-### Geographic Context
+### Number Formatting
+
 ```javascript
-import { formatName } from '@onsvisual/robo-utils';
-console.log(formatName("North West", "in")); // "in the North West"
-console.log(formatName("London", "its")); // "London's"
+// Format with comma separators and 2 decimal places
+robo.format(1234.567, ',.2f')
+// Returns: "1,234.57"
+
+// Format with comma separators and round to hundreds
+robo.format(1234.567, ',.-2f')
+// Returns: "1,200"
+```
+
+## Data Analysis and Ranking
+
+### Getting Top and Bottom Rankings
+
+```javascript
+// Get top 2 places by population, plus a specific place
+places.top("population_2011", 2, lookup["Rutland"])
+// Returns: [Birmingham_data, Leeds_data, Rutland_data]
+
+// Get bottom 2 places by population, plus a specific place
+places.bottom("population_2011", 2, lookup["Rutland"])
+// Returns: [Rutland_data, City_of_London_data, Isles_of_Scilly_data]
+
+// Get bottom 3 places, then remove one
+places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"])
+// Returns: [West_Somerset_data, City_of_London_data]
+```
+
+### Converting to Chart Data
+
+```javascript
+// Convert top 3 places to chart-ready data format
+places.top("population_2011", 3).toData({x: "population_2011", y: "areanm"})
+// Returns: [
+//   {x: birmingham_population, y: "Birmingham"},
+//   {x: leeds_population, y: "Leeds"}, 
+//   {x: sheffield_population, y: "Sheffield"}
+// ]
+```
+
+## Comparative Analysis
+
+### Break-point Analysis
+
+```javascript
+// Simple comparison (less than threshold)
+robo.breaksToWords(-1)
+// Returns: "less"
+
+// Range-based comparison
+robo.breaksToWords(5, [4, 6], ["less", "about the same", "more"])
+// Returns: "about the same"
+
+// Range-based comparison with qualifier
+robo.breaksToWords(6, [4, 6], ["less", "about the same", "more"], "roughly")
+// Returns: "roughly about the same"
+```
+
+## Name Formatting
+
+### Possessive Forms
+
+```javascript
+// Format place names with possessive endings
+robo.formatName("Derbyshire Dales", "its")
+// Returns: "the Derbyshire Dales'" (handles names ending in 's' correctly)
+```
+
+## Common Patterns
+
+### Data Pipeline Pattern
+
+```javascript
+// Typical data analysis workflow
+const results = data
+  .filter(d => /* filter criteria */)
+  .sortBy("fieldName")
+  .top("metricField", 5)
+  .toData({x: "xField", y: "yField"});
+```
+
+### Narrative Generation Pattern
+
+```javascript
+// Generate descriptive text for rankings
+const rank = places.getRank(lookup["SomePlace"], "population_2011");
+const description = `${lookup["SomePlace"].areanm} ranks ${rank.toWords("ordinal")} by population`;
+```
+
+### Comparative Analysis Pattern
+
+```javascript
+// Compare values and generate descriptive text
+const comparisonValue = someCalculation();
+const description = robo.breaksToWords(
+  comparisonValue, 
+  [lowerBound, upperBound], 
+  ["below average", "average", "above average"],
+  "approximately"
+);
 ```
