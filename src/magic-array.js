@@ -49,18 +49,11 @@ export default class MagicArray extends Array {
 			sorted.descending(key);
 	}
 	between(key, start, end, mode = "rank", order = "descending", add = null) {
-		let workingArray = this;
-		
-		// Add the element before any processing
-		if (add) {
-			workingArray = workingArray.add(add);
-		}
-		
 		let result;
 		
 		if (mode === "rank") {
 			// Get items between specific ranks
-			const sorted = workingArray.sortBy(key, order);
+			const sorted = this.sortBy(key, order);
 			const startIndex = Math.max(0, start - 1); // Convert to 0-based index
 			const endIndex = Math.min(sorted.length, end); // Inclusive end
 			result = MagicArray.from(sorted.slice(startIndex, endIndex));
@@ -68,17 +61,17 @@ export default class MagicArray extends Array {
 			// Get items between specific values
 			const minVal = Math.min(start, end);
 			const maxVal = Math.max(start, end);
-			result = MagicArray.from(workingArray.filter(d => d[key] >= minVal && d[key] <= maxVal));
+			result = MagicArray.from(this.filter(d => d[key] >= minVal && d[key] <= maxVal));
 			result = result.sortBy(key, order);
 		} else if (mode === "around") {
 			// Get items around a specific item's rank
 			const targetItem = start; // start is the target item
 			const range = end; // end is the range (+/- positions)
-			const targetRank = workingArray.getRank(targetItem, key, order);
+			const targetRank = this.getRank(targetItem, key, order);
 			const startRank = Math.max(1, targetRank - range);
-			const endRank = Math.min(workingArray.length, targetRank + range);
+			const endRank = Math.min(this.length, targetRank + range);
 			
-			const sorted = workingArray.sortBy(key, order);
+			const sorted = this.sortBy(key, order);
 			const startIndex = startRank - 1;
 			const endIndex = endRank;
 			result = MagicArray.from(sorted.slice(startIndex, endIndex));
@@ -86,7 +79,11 @@ export default class MagicArray extends Array {
 			throw new Error(`Invalid mode: ${mode}. Use 'rank', 'value', or 'around'.`);
 		}
 		
-		return result.length === 1 ? result[0] : result;
+		if (add) {
+			result = result.add(add);
+		}
+		
+		return result.length === 1 ? result[0] : result.sortBy(key,order);
 	}
 	trim(n) {
 		return n >= 0 ?
