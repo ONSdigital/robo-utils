@@ -244,6 +244,21 @@ places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"])
 // Returns: [West_Somerset_data, City_of_London_data]
 ```
 
+### Getting things between
+```javascript
+// Get places ranked 5-10, with Rutland added and properly positioned
+places.between("p2020", 5, 10, "rank", "descending", lookup["Rutland"])
+  .toList("areanm")
+
+// Get places around your area, with a comparison place properly ranked
+places.between("p2020", place, 3, "around", "descending", lookup["Birmingham"])
+  .toList("areanm")
+
+// Get places between different values, here between 1/2 to 1 million
+places.between("p2020",500000,1000000,"value")
+  .toList("areanm")  
+```
+
 ### Converting to Chart Data
 
 ```javascript
