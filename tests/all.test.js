@@ -79,3 +79,111 @@ test("format(1234.567, ',.-2f') should return 1,200", () => {
 test("Top 3 places by population to data", () => {
   expect(places.top("population_2011", 3).toData({x: "population_2011", y: "areanm"})).toEqual(["Birmingham", "Leeds", "Sheffield"].map(nm => ({x: lookup[nm].population_2011, y: nm})));
 })
+
+// Additional tests for the between() method
+
+test('Between ranks 2-4 should return 3 places', () => {
+  const result = places.between("population_2011", 2, 4);
+  expect(result.length).toBe(3);
+  expect(result[0]).toBe(lookup["Leeds"]); // 2nd place
+  expect(result[2]).toBe(lookup["Sheffield"]); // 4th place (assuming Sheffield is 4th)
+});
+
+test('Between ranks 1-1 should return single item (Birmingham)', () => {
+  const result = places.between("population_2011", 1, 1);
+  expect(result).toBe(lookup["Birmingham"]); // Should return single item, not array
+});
+
+test('Between ranks 2-4 with Rutland added should include Rutland in proper position', () => {
+  const result = places.between("population_2011", 2, 4, "rank", "descending", lookup["Rutland"]);
+  expect(result).toContain(lookup["Rutland"]);
+  expect(result.length).toBe(4); // 3 original + 1 added
+});
+
+test('Between values 100000-500000 should return places within population range', () => {
+  const result = places.between("population_2011", 100000, 500000, "value");
+  result.forEach(place => {
+    expect(place.population_2011).toBeGreaterThanOrEqual(100000);
+    expect(place.population_2011).toBeLessThanOrEqual(500000);
+  });
+});
+
+test('Between values should work with reversed range (500000-100000)', () => {
+  const result1 = places.between("population_2011", 100000, 500000, "value");
+  const result2 = places.between("population_2011", 500000, 100000, "value");
+  expect(result1).toEqual(result2);
+});
+
+test('Between around Birmingham with range 2 should include places ranked 1-3', () => {
+  const result = places.between("population_2011", lookup["Birmingham"], 2, "around");
+  expect(result.length).toBe(3); // Ranks 1, 2, 3
+  expect(result[0]).toBe(lookup["Birmingham"]); // Birmingham should be first
+});
+
+test('Between around Birmingham with range 2, excluding Birmingham', () => {
+  const result = places.between("population_2011", lookup["Birmingham"], 2, "around")
+    .remove(lookup["Birmingham"]);
+  expect(result.length).toBe(2); // Ranks 2, 3
+  expect(result).not.toContain(lookup["Birmingham"]);
+});
+
+test('Between around middle-ranked place should return symmetric range', () => {
+  const middlePlace = places[Math.floor(places.length / 2)];
+  const result = places.between("population_2011", middlePlace, 1, "around");
+  expect(result.length).toBe(3); // target ± 1 position
+});
+
+test('Between around last place with range 2 should not exceed array bounds', () => {
+  const lastPlace = places.bottom("population_2011", 1);
+  const result = places.between("population_2011", lastPlace, 2, "around");
+  expect(result.length).toBeLessThanOrEqual(3); // Should handle boundary properly
+});
+
+test('Between around first place with range 2 should not exceed array bounds', () => {
+  const firstPlace = places.top("population_2011", 1);
+  const result = places.between("population_2011", firstPlace, 2, "around");
+  expect(result.length).toBeLessThanOrEqual(3); // Should handle boundary properly
+});
+
+test('Between with ascending order should return items in ascending order', () => {
+  const result = places.between("population_2011", 1, 5, "rank", "ascending");
+  for (let i = 0; i < result.length - 1; i++) {
+    expect(result[i].population_2011).toBeLessThanOrEqual(result[i + 1].population_2011);
+  }
+});
+
+test('Between with invalid mode should throw error', () => {
+  expect(() => {
+    places.between("population_2011", 1, 5, "invalid");
+  }).toThrow("Invalid mode: invalid. Use 'rank', 'value', or 'around'.");
+});
+
+test('Between ranks with added item should maintain proper sorting', () => {
+  const result = places.between("population_2011", 1, 3, "rank", "descending", lookup["Rutland"]);
+  // Check that result is properly sorted in descending order
+  for (let i = 0; i < result.length - 1; i++) {
+    expect(result[i].population_2011).toBeGreaterThanOrEqual(result[i + 1].population_2011);
+  }
+});
+
+test('Between values with added item should include added item if within range', () => {
+  const rutlandPop = lookup["Rutland"].population_2011;
+  const result = places.between("population_2011", rutlandPop - 1000, rutlandPop + 1000, "value", "descending", lookup["Rutland"]);
+  expect(result).toContain(lookup["Rutland"]);
+});
+
+test('Between values with added item should exclude added item if outside range', () => {
+  const rutlandPop = lookup["Rutland"].population_2011;
+  const result = places.between("population_2011", rutlandPop + 10000, rutlandPop + 20000, "value", "descending", lookup["Rutland"]);
+  expect(result).not.toContain(lookup["Rutland"]);
+});
+
+test('Between around with added item should affect ranking calculation', () => {
+  // Test that adding an item changes the ranking context
+  const testPlace = places[10]; // Some middle-ranked place
+  const result1 = places.between("population_2011", testPlace, 1, "around");
+  const result2 = places.between("population_2011", testPlace, 1, "around", "descending", lookup["Birmingham"]);
+  
+  // Results should be different due to Birmingham affecting the ranking
+  expect(result1.length).not.toBe(result2.length);
+});
