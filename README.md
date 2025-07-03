@@ -43,6 +43,7 @@ Extends JavaScript's Array class with data manipulation methods.
   - Input: Sort key, number of items, optional additional items
   - Output: Single item or MagicArray
 - `bottom(key, n = 1, add = null)` - Get bottom n items by key
+- `between(key, start, end, mode = "rank", order = "descending", add = null)` - get items between start and end, mode can be "rank", "value" or "around"
 - `trim(n)` - Trim array to n items (positive from start, negative from end)
 - `flip()` - Reverse array order
 
