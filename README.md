@@ -43,7 +43,7 @@ Extends JavaScript's Array class with data manipulation methods.
   - Input: Sort key, number of items, optional additional items
   - Output: Single item or MagicArray
 - `bottom(key, n = 1, add = null)` - Get bottom n items by key
-- `between(key, start, end, mode = "rank", order = "descending", add = null)` - get items between start and end, mode can be "rank", "value" or "around"
+- `between(key, start, end, mode = "rank", order = "descending", add = null, excludeTarget = false)` - get items between start and end, mode can be "rank", "value" or "around"
 - `trim(n)` - Trim array to n items (positive from start, negative from end)
 - `flip()` - Reverse array order
 
@@ -257,7 +257,11 @@ places.between("p2020", place, 3, "around", "descending", lookup["Birmingham"])
 
 // Get places between different values, here between 1/2 to 1 million
 places.between("p2020",500000,1000000,"value")
-  .toList("areanm")  
+  .toList("areanm")
+
+// Get places around my area excluding my area itself
+places.between("p2020",place,1,"around","descending",null,true)
+  .toList('areanm')  
 ```
 
 ### Converting to Chart Data
