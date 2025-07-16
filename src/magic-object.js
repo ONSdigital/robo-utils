@@ -1,4 +1,4 @@
-import { getName, getCode, getParent, toData, highestFromArray, lowestFromArray } from "./functions.js";
+import { getName, getCode, getParent, toData } from "./functions.js";
 
 export default class MagicObject {
 	constructor(obj) {
@@ -19,11 +19,5 @@ export default class MagicObject {
 	}
 	toData (props, mode = null) {
 		return toData([this], props, mode);
-	}
-	highest(keys){
-		return highestFromArray(this, keys)
-	}
-	lowest(keys){
-		return lowestFromArray(this,keys)
 	}
 }

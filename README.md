@@ -47,7 +47,6 @@ Extends JavaScript's Array class with data manipulation methods.
 - `trim(n)` - Trim array to n items (positive from start, negative from end)
 - `flip()` - Reverse array order
 
-
 ### MagicObject
 Wrapper for objects with geographic/administrative data methods.
 
@@ -58,8 +57,6 @@ Wrapper for objects with geographic/administrative data methods.
 - `getCode()` - Extract area/region code
 - `getCountry()` - Get country code from first character
 - `getParent()` - Get parent area code
-- `highest(keys)` - Given an array of `keys`, will return the key of the highest values. Recommended to use an object like a dictionary to lookup between column names and human readable titles. 
-- `lowest(keys)` - Given an array of `keys`, will return the key of the lowest values. Recommended to use an object like a dictionary to lookup between column names and human readable titles. 
 
 ## Data Processing Functions
 
@@ -265,19 +262,6 @@ places.between("p2020",500000,1000000,"value")
 // Get places around my area excluding my area itself
 places.between("p2020",place,1,"around","descending",null,true)
   .toList('areanm')  
-```
-
-### Getting highest/lowest columns
-```javascript
-// Get the value of which ever is highest 
-place[place.highest(["long_term_illness_2011_pc","unpaid_care_20_49_2011_pc"])]
-  .format(",.0%")
-
-// Use together with a dictionary
-var dict = {"long_term_illness_2011_pc":"Long term illness", "unpaid_care_20_49_2011_pc":"unpaid care for those aged 20–49"}
-In {place.getName()} the biggest health issue from census 2011 was {dict[place.highest(["long_term_illness_2011_pc","unpaid_care_20_49_2011_pc"])]} with a value of place[place.highest(["long_term_illness_2011_pc","unpaid_care_20_49_2011_pc"])]
-  .format(",.0%")
-
 ```
 
 ### Converting to Chart Data

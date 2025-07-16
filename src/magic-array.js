@@ -48,8 +48,9 @@ export default class MagicArray extends Array {
 			sorted.length === n ? sorted :
 			sorted.descending(key);
 	}
-	between(key, start, end, mode = "rank", order = "descending", add = null, excludeTarget = false) {
+	between(key, start, end, mode = "rank", order = "descending", add = null) {
 		let result;
+		
 		if (mode === "rank") {
 			// Get items between specific ranks
 			const sorted = this.sortBy(key, order);
@@ -69,15 +70,11 @@ export default class MagicArray extends Array {
 			const targetRank = this.getRank(targetItem, key, order);
 			const startRank = Math.max(1, targetRank - range);
 			const endRank = Math.min(this.length, targetRank + range);
+			
 			const sorted = this.sortBy(key, order);
 			const startIndex = startRank - 1;
 			const endIndex = endRank;
 			result = MagicArray.from(sorted.slice(startIndex, endIndex));
-
-			// Exclude the target item itself if requested
-			if (excludeTarget) {
-				result = result.filter(item => item !== targetItem);
-			}
 		} else {
 			throw new Error(`Invalid mode: ${mode}. Use 'rank', 'value', or 'around'.`);
 		}
@@ -86,7 +83,7 @@ export default class MagicArray extends Array {
 			result = result.add(add);
 		}
 		
-		return result.length === 1 ? result : result.sortBy(key, order);
+		return result.length === 1 ? result[0] : result.sortBy(key,order);
 	}
 	trim(n) {
 		return n >= 0 ?
