@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ONSvisual/robo-utils.git"
+    "url": "git+https://github.com/ONSdigital/robo-utils.git"
   },
   "author": "Ahmad Barclay",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ONSvisual/robo-utils/issues"
+    "url": "https://github.com/ONSdigital/robo-utils/issues"
   },
-  "homepage": "https://github.com/ONSvisual/robo-utils#readme",
+  "homepage": "https://github.com/ONSdigital/robo-utils#readme",
   "peerDependencies": {
     "articles": "^0.2.2",
     "d3-dsv": "^3.0.1",
