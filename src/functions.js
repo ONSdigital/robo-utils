@@ -2,6 +2,7 @@ import { csvParse as csvP } from "d3-dsv";
 import { formatLocale } from "d3-format";
 import { roundTo } from "round-to";
 import * as articles from "articles";
+import pluralize from "pluralize-esm";
 import converter from './number-to-words.js';
 import MagicNumber from "./magic-number.js";
 import MagicObject from "./magic-object.js";
@@ -320,3 +321,7 @@ export function highestFromArray(arr, keys) {
 export function lowestFromArray(arr, keys) {
   return getExtreme(arr, keys, "lowest");
 }
+
+export const pluralise = (str, count = undefined, inclusive = false) => count ? pluralize(str, count, inclusive) : pluralize.plural(str);
+
+export const singularise = (str) => pluralize.singular(str);

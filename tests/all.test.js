@@ -887,3 +887,19 @@ describe('robo.getExtreme - Absolute Mode', () => {
     });
   });
 });
+
+test("pluralise('person') should return 'people'", () => {
+  expect(robo.pluralise("person")).toBe("people");
+});
+
+test("pluralise('person', 1) should return 'person'", () => {
+  expect(robo.pluralise("person", 1)).toBe("person");
+});
+
+test("pluralise('people', 1) should return 'person'", () => {
+  expect(robo.pluralise("people", 1)).toBe("person");
+});
+
+test("singularise('people') should return 'person'", () => {
+  expect(robo.singularise("people")).toBe("person");
+});

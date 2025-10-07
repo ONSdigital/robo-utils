@@ -1,6 +1,6 @@
 {
   "name": "@onsvisual/robo-utils",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "Utilities for robo-journalism.",
   "main": "index.mjs",
   "type": "module",
@@ -23,6 +23,7 @@
     "d3-format": "^3.1.0",
     "node-html-parser": "^6.1.5",
     "parse-color": "^1.0.0",
+    "pluralize-esm": "^9.0.5",
     "round-to": "^6.0.0"
   },
   "devDependencies": {

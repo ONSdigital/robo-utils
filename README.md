@@ -149,6 +149,16 @@ Capitalize first letter of string.
 - Input: String
 - Output: Capitalized string
 
+### pluralise(str, count = undefined)
+Pluralise a word (eg. person => people). A word that is already plural will not change. If count (optional) is set to 1 then the singular will be returned, even if the input is plural.
+- Input: String, count
+- Output: Pluralised string
+
+### singularise(str)
+Singularise a word (eg. people => person). A word that is already singular will not change.
+- Input: String
+- Output: Singularised string
+
 ### aAn(str, mode = "default")
 Add appropriate article ("a" or "an") to string.
 - Input: String, mode
