@@ -25,5 +25,7 @@ export {
   autoType,
   ascending,
   descending,
-  aAn
+  aAn,
+  pluralise,
+  singularise
 } from "./src/functions.js";
