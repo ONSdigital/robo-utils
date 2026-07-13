@@ -2,11 +2,9 @@
 
 [![npm version](https://badge.fury.io/js/@onsvisual%2Frobo-utils.svg)](https://www.npmjs.com/package/@onsvisual/robo-utils)
 
-Utilities to make Natural Language Generation (NLG) for semi-automated journalism a bit easier. Can be used in any Javascript project (web browser or NodeJS) that is set up to use NPM packages.
+A library of utilities to make Natural Language Generation (NLG) for semi-automated journalism a bit easier. Used in particular to produce local data-driven area reports in ONS products like [Housing prices in your area](https://www.ons.gov.uk/economy/inflationandpriceindices/articles/housingpricesinyourarea/2024-03-20), but can be included in any Javascript project (web browser or NodeJS) that is set up to use NPM packages.
 
-Some simple usage examples for robo-utils can be found in [this Svelte REPL](https://svelte.dev/repl/817f1d35fd1f40bf80005715f40faa07?version=4.2.9).
-
-More complex usage examples (making use of [Pug](https://pugjs.org/api/getting-started.html) templates rendered to JSON files) can be found in the ONS [robo-article](https://github.com/ONSvisual/robo-article) and [robo-embed](https://github.com/ONSvisual/robo-embed) templates. You can also play with the PUG templates [this live editor](https://onsdigital.github.io/robo-editor/) in your browser.
+Some simple usage examples can be found in [this Svelte REPL](https://svelte.dev/repl/817f1d35fd1f40bf80005715f40faa07?version=4.2.9). More complex usage examples (making use of [Pug](https://pugjs.org/api/getting-started.html) templates rendered to JSON files) can be found in the ONS [robo-article](https://github.com/ONSvisual/robo-article) and [robo-embed](https://github.com/ONSvisual/robo-embed) templates. You can also play with the PUG templates [this live editor](https://onsdigital.github.io/robo-editor/) in your browser.
 
 ## Getting started
 
