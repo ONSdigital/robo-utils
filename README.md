@@ -34,21 +34,21 @@ E06000005,Darlington,112489`;
 
 // Parse the data and load it into a MagicArray
 const rows = csvParse(csv);
-const data = new MagicArray.from(rows);
+const data = MagicArray.from(rows);
 
 // Get the row for an area of interest
 const d = data.get("Hartlepool"); // Data row for Hartlepool
 
 // Get the name and code of the area
-console.log(d.getName(), d.getCode())
+console.log(d.getName(), d.getCode());
 // Output: "Hartlepool", "E06000001"
 
 // Return and format a data value for the area (uses d3-format strings)
-console.log(d.population.format(",");
+console.log(d.population.format(","));
 // Output: "98,180"
 
 // Get the rank of the area compared to other areas and return it in words
-console.log(d.getRank("population", "descending").toWords("ordinal");
+console.log(data.getRank(d, "population").toWords("ordinal"));
 // Output: "Fifth"
 ```
 
