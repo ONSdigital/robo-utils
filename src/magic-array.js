@@ -6,17 +6,17 @@ export default class MagicArray extends Array {
 		return order === "ascending" ? this.ascending(key) : this.descending(key);
 	}
 	filterBy(key, val) {
-		return this.filter(d => d[key] === val);
+		return this.filter((d) => d[key] === val);
 	}
-	toList (key, separator = [", ", " and "]) {
+	toList(key, separator = [", ", " and "]) {
 		return toList(this, key, separator);
 	}
-	toData (props, mode = null) {
+	toData(props, mode = null) {
 		return toData(this, props, mode);
 	}
 	getRank(item, key, order = "descending") {
 		const sorted = this.sortBy(key, order);
-		return new MagicNumber(sorted.map(d => d[key]).indexOf(item[key]) + 1);
+		return new MagicNumber(sorted.map((d) => d[key]).indexOf(item[key]) + 1);
 	}
 	add(items) {
 		return addToArray(MagicArray.from(this), items);
@@ -35,20 +35,32 @@ export default class MagicArray extends Array {
 		if (add) {
 			sorted = sorted.add(add);
 		}
-		return sorted.length === 1 ? sorted[0] :
-			sorted.length === n ? sorted :
-			sorted.descending(key);
+		return sorted.length === 1
+			? sorted[0]
+			: sorted.length === n
+				? sorted
+				: sorted.descending(key);
 	}
 	bottom(key, n = 1, add = null) {
 		let sorted = this.descending(key).slice(-n);
 		if (add) {
 			sorted = sorted.add(add);
 		}
-		return sorted.length === 1 ? sorted[0] :
-			sorted.length === n ? sorted :
-			sorted.descending(key);
+		return sorted.length === 1
+			? sorted[0]
+			: sorted.length === n
+				? sorted
+				: sorted.descending(key);
 	}
-	between(key, start, end, mode = "rank", order = "descending", add = null, excludeTarget = false) {
+	between(
+		key,
+		start,
+		end,
+		mode = "rank",
+		order = "descending",
+		add = null,
+		excludeTarget = false
+	) {
 		let result;
 		if (mode === "rank") {
 			// Get items between specific ranks
@@ -60,7 +72,7 @@ export default class MagicArray extends Array {
 			// Get items between specific values
 			const minVal = Math.min(start, end);
 			const maxVal = Math.max(start, end);
-			result = MagicArray.from(this.filter(d => d[key] >= minVal && d[key] <= maxVal));
+			result = MagicArray.from(this.filter((d) => d[key] >= minVal && d[key] <= maxVal));
 			result = result.sortBy(key, order);
 		} else if (mode === "around") {
 			// Get items around a specific item's rank
@@ -76,22 +88,20 @@ export default class MagicArray extends Array {
 
 			// Exclude the target item itself if requested
 			if (excludeTarget) {
-				result = result.filter(item => item !== targetItem);
+				result = result.filter((item) => item !== targetItem);
 			}
 		} else {
 			throw new Error(`Invalid mode: ${mode}. Use 'rank', 'value', or 'around'.`);
 		}
-		
+
 		if (add) {
 			result = result.add(add);
 		}
-		
+
 		return result.length === 1 ? result : result.sortBy(key, order);
 	}
 	trim(n) {
-		return n >= 0 ?
-			this.slice(0, Math.floor(n)) :
-			this.slice(Math.floor(n));
+		return n >= 0 ? this.slice(0, Math.floor(n)) : this.slice(Math.floor(n));
 	}
 	flip() {
 		return MagicArray.from(this).reverse();
