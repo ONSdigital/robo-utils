@@ -1,7 +1,46 @@
 import MagicNumber from "./magic-number.js";
-import { toList, toData, ascending, descending, addToArray, removeFromArray } from "./functions.js";
+import {
+	toList,
+	toData,
+	ascending,
+	descending,
+	addToArray,
+	removeFromArray,
+	getProps,
+	makeLookup
+} from "./functions.js";
 
 export default class MagicArray extends Array {
+	constructor(...items) {
+		super(...items);
+		if (items?.length) {
+			const props = getProps(items?.[0]);
+			for (const key of Object.keys(props)) this[key] = props[key];
+			this.lookup = makeLookup(items, this?.codeKey, this?.nameKey);
+		}
+	}
+	static from(iterable, mapFn, thisArg) {
+		// This method allows for the creation of a MagicArray from very large regular JS arrays
+		const array = Array.from(iterable, mapFn, thisArg);
+
+		const result = new MagicArray();
+		for (let i = 0; i < array.length; i++) {
+			result[i] = array[i];
+		}
+
+		const props = getProps(result?.[0]);
+		for (const key of Object.keys(props)) result[key] = props[key];
+		result.lookup = makeLookup(result, result?.codeKey, result?.nameKey);
+		return result;
+	}
+	get(key) {
+		return this.lookup[key];
+	}
+	refreshProps() {
+		const props = getProps(this?.[0]);
+		for (const key of Object.keys(props)) this[key] = props[key];
+		this.lookup = makeLookup(this, this?.codeKey, this?.nameKey);
+	}
 	sortBy(key, order = "ascending") {
 		return order === "ascending" ? this.ascending(key) : this.descending(key);
 	}

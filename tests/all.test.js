@@ -8,15 +8,6 @@ const places = data
 	.filter((d) => ["E06", "E07", "E08", "E09", "W06"].includes(d.areacd.slice(0, 3)))
 	.sortBy("areanm");
 const place = places[0];
-const lookup = (() => {
-	let codeKey = robo.getCodeKey(place);
-	let nameKey = robo.getNameKey(place);
-	let lkp = {};
-	[codeKey, nameKey].forEach((key) => {
-		if (key) data.forEach((p) => (lkp[p[key]] = p));
-	});
-	return lkp;
-})();
 
 test('toWords(1, "ordinal", {dropFirst: true}) should be ""', () => {
 	expect(robo.toWords(1, "ordinal", { dropFirst: true })).toBe("");
@@ -27,31 +18,31 @@ test('10 toWords(10, "ordinal") should be "10th"', () => {
 });
 
 test('Ordinal rank for Birmingham population should be "first"', () => {
-	expect(places.getRank(lookup["Birmingham"], "population_2011").toWords("ordinal")).toBe(
+	expect(places.getRank(places.get("Birmingham"), "population_2011").toWords("ordinal")).toBe(
 		"first"
 	);
 });
 
 test("Top two places by population plus Rutland", () => {
-	expect(places.top("population_2011", 2, lookup["Rutland"])).toEqual([
-		lookup["Birmingham"],
-		lookup["Leeds"],
-		lookup["Rutland"]
+	expect([...places.top("population_2011", 2, places.get("Rutland"))]).toEqual([
+		places.get("Birmingham"),
+		places.get("Leeds"),
+		places.get("Rutland")
 	]);
 });
 
 test("Bottom two places by population plus Rutland", () => {
-	expect(places.bottom("population_2011", 2, lookup["Rutland"])).toEqual([
-		lookup["Rutland"],
-		lookup["City of London"],
-		lookup["Isles of Scilly"]
+	expect([...places.bottom("population_2011", 2, places.get("Rutland"))]).toEqual([
+		places.get("Rutland"),
+		places.get("City of London"),
+		places.get("Isles of Scilly")
 	]);
 });
 
 test("Bottom three places by population minus Isles of Scilly", () => {
-	expect(places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"])).toEqual([
-		lookup["West Somerset"],
-		lookup["City of London"]
+	expect([...places.bottom("population_2011", 3).remove(places.get("Isles of Scilly"))]).toEqual([
+		places.get("West Somerset"),
+		places.get("City of London")
 	]);
 });
 
@@ -99,7 +90,10 @@ test("format(1234.567, ',.-2f') should return 1,200", () => {
 
 test("Top 3 places by population to data", () => {
 	expect(places.top("population_2011", 3).toData({ x: "population_2011", y: "areanm" })).toEqual(
-		["Birmingham", "Leeds", "Sheffield"].map((nm) => ({ x: lookup[nm].population_2011, y: nm }))
+		["Birmingham", "Leeds", "Sheffield"].map((nm) => ({
+			x: places.get(nm).population_2011,
+			y: nm
+		}))
 	);
 });
 
@@ -108,18 +102,25 @@ test("Top 3 places by population to data", () => {
 test("Between ranks 2-4 should return 3 places", () => {
 	const result = places.between("population_2011", 2, 4);
 	expect(result.length).toBe(3);
-	expect(result[0]).toBe(lookup["Leeds"]); // 2nd place
-	expect(result[2]).toBe(lookup["Cornwall"]); // 4th place
+	expect(result[0]).toBe(places.get("Leeds")); // 2nd place
+	expect(result[2]).toBe(places.get("Cornwall")); // 4th place
 });
 
 test("Between ranks 1-1 should return single item (Birmingham)", () => {
 	const result = places.between("population_2011", 1, 1);
-	expect(result[0]).toBe(lookup["Birmingham"]); // Should return single item, not array
+	expect(result[0]).toBe(places.get("Birmingham")); // Should return single item, not array
 });
 
 test("Between ranks 2-4 with Rutland added should include Rutland in proper position", () => {
-	const result = places.between("population_2011", 2, 4, "rank", "descending", lookup["Rutland"]);
-	// expect(result).toEqual(expect.arrayContaining([objectContaining(lookup["Rutland"])]));
+	const result = places.between(
+		"population_2011",
+		2,
+		4,
+		"rank",
+		"descending",
+		places.get("Rutland")
+	);
+	// expect(result).toEqual(expect.arrayContaining([objectContaining(places.get("Rutland"])]));
 	expect(result.length).toBe(4); // 3 original + 1 added
 });
 
@@ -138,17 +139,17 @@ test("Between values should work with reversed range (500000-100000)", () => {
 });
 
 test("Between around Birmingham with range 2 should include places ranked 1-3", () => {
-	const result = places.between("population_2011", lookup["Birmingham"], 2, "around");
+	const result = places.between("population_2011", places.get("Birmingham"), 2, "around");
 	expect(result.length).toBe(3); // Ranks 1, 2, 3
-	expect(result[0]).toBe(lookup["Birmingham"]); // Birmingham should be first
+	expect(result[0]).toBe(places.get("Birmingham")); // Birmingham should be first
 });
 
 test("Between around Birmingham with range 2, excluding Birmingham", () => {
 	const result = places
-		.between("population_2011", lookup["Birmingham"], 2, "around")
-		.remove(lookup["Birmingham"]);
+		.between("population_2011", places.get("Birmingham"), 2, "around")
+		.remove(places.get("Birmingham"));
 	expect(result.length).toBe(2); // Ranks 2, 3
-	expect(result).not.toContain(lookup["Birmingham"]);
+	expect(result).not.toContain(places.get("Birmingham"));
 });
 
 test("Between around middle-ranked place should return symmetric range", () => {
@@ -185,7 +186,14 @@ test("Between with invalid mode should throw error", () => {
 });
 
 test("Between ranks with added item should maintain proper sorting", () => {
-	const result = places.between("population_2011", 1, 3, "rank", "descending", lookup["Rutland"]);
+	const result = places.between(
+		"population_2011",
+		1,
+		3,
+		"rank",
+		"descending",
+		places.get("Rutland")
+	);
 	// Check that result is properly sorted in descending order
 	for (let i = 0; i < result.length - 1; i++) {
 		expect(Math.abs(result[i].population_2011)).toBeGreaterThanOrEqual(
@@ -195,29 +203,29 @@ test("Between ranks with added item should maintain proper sorting", () => {
 });
 
 test("Between values with added item should include added item if within range", () => {
-	const rutlandPop = lookup["Rutland"].population_2011;
+	const rutlandPop = places.get("Rutland").population_2011;
 	const result = places.between(
 		"population_2011",
 		rutlandPop - 1000,
 		rutlandPop + 1000,
 		"value",
 		"descending",
-		lookup["Rutland"]
+		places.get("Rutland")
 	);
-	expect(result).toContain(lookup["Rutland"]);
+	expect(result).toContain(places.get("Rutland"));
 });
 
 test("Between values with added item should include added item if outside range", () => {
-	const rutlandPop = lookup["Rutland"].population_2011;
+	const rutlandPop = places.get("Rutland").population_2011;
 	const result = places.between(
 		"population_2011",
 		rutlandPop + 10000,
 		rutlandPop + 20000,
 		"value",
 		"descending",
-		lookup["Rutland"]
+		places.get("Rutland")
 	);
-	expect(result).toContain(lookup["Rutland"]);
+	expect(result).toContain(places.get("Rutland"));
 });
 
 test("Between around with added item should affect ranking calculation", () => {
@@ -230,7 +238,7 @@ test("Between around with added item should affect ranking calculation", () => {
 		1,
 		"around",
 		"descending",
-		lookup["Birmingham"]
+		places.get("Birmingham")
 	);
 
 	// Results should be different due to Birmingham affecting the ranking
@@ -242,7 +250,7 @@ test("Between around with added item should affect ranking calculation", () => {
 test("Between around Birmingham with range 2, excluding target should not include Birmingham", () => {
 	const result = places.between(
 		"population_2011",
-		lookup["Birmingham"],
+		places.get("Birmingham"),
 		2,
 		"around",
 		"descending",
@@ -250,7 +258,7 @@ test("Between around Birmingham with range 2, excluding target should not includ
 		true
 	);
 	expect(result.length).toBe(2); // Ranks 2, 3 (Birmingham excluded)
-	expect(result).not.toContain(lookup["Birmingham"]);
+	expect(result).not.toContain(places.get("Birmingham"));
 });
 
 test("Between around middle place with range 1, excluding target should return 2 items", () => {
@@ -335,11 +343,11 @@ test("Between around with added item and excluding target should work correctly"
 		1,
 		"around",
 		"descending",
-		lookup["Rutland"],
+		places.get("Rutland"),
 		true
 	);
 	expect(result).not.toContain(testPlace); // Target should be excluded
-	expect(result).toContain(lookup["Rutland"]); // Added item should be included
+	expect(result).toContain(places.get("Rutland")); // Added item should be included
 });
 
 test("Between around with excludeTarget=false should behave like original (default)", () => {

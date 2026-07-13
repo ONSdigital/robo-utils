@@ -47,6 +47,15 @@ export function autoType(object) {
 	return new MagicObject(object);
 }
 
+export function makeLookup(items, codeKey, nameKey) {
+	const lookup = {};
+	for (const item of items) {
+		if (codeKey) lookup[item[codeKey]] = item;
+		if (nameKey) lookup[item[nameKey]] = item;
+	}
+	return lookup;
+}
+
 // Reliable way to check if a variable is a non-null number
 export const isNumeric = (val) => isFinite(val) && val !== null;
 
@@ -160,6 +169,15 @@ export function getParentKey(obj) {
 		if (i > -1) return keys[i];
 	}
 	return null;
+}
+
+export function getProps(item) {
+	if (typeof item !== "object") return {};
+	return {
+		codeKey: getCodeKey(item),
+		nameKey: getNameKey(item),
+		parentKey: getParentKey(item)
+	};
 }
 
 export function getName(place, context = null, mode = "default") {
