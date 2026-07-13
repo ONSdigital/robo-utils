@@ -56,19 +56,6 @@ console.log(d.getRank("population", "descending").toWords("ordinal");
 
 ## Core Classes
 
-### MagicNumber
-Extends JavaScript's Number class with additional formatting and conversion methods.
-
-**Methods:**
-- `format(str = ",", si = "long")` - Format number with thousand separators and SI units
-  - Input: Number, format string, SI unit style
-  - Output: Formatted string (e.g., `1234` → `"1,234"`, `1000000` → `"1 million"`)
-- `toWords(type = "cardinal", options = null)` - Convert to word representation
-  - Input: Number, type ("cardinal"/"ordinal"), options object
-  - Output: String (e.g., `5` → `"five"`, `21` → `"twenty-first"`)
-- `abs()` - Return absolute value as MagicNumber
-- `round(dp)` - Round to specified decimal places
-
 ### MagicArray
 Extends JavaScript's Array class with data manipulation methods.
 
@@ -93,7 +80,6 @@ Extends JavaScript's Array class with data manipulation methods.
 - `trim(n)` - Trim array to n items (positive from start, negative from end)
 - `flip()` - Reverse array order
 
-
 ### MagicObject
 Wrapper for objects with geographic/administrative data methods.
 
@@ -105,7 +91,20 @@ Wrapper for objects with geographic/administrative data methods.
 - `getCountry()` - Get country code from first character
 - `getParent()` - Get parent area code
 - `highest(keys)` - Given an array of `keys`, will return the key of the highest values. Recommended to use an object like a dictionary to lookup between column names and human readable titles. 
-- `lowest(keys)` - Given an array of `keys`, will return the key of the lowest values. Recommended to use an object like a dictionary to lookup between column names and human readable titles. 
+- `lowest(keys)` - Given an array of `keys`, will return the key of the lowest values. Recommended to use an object like a dictionary to lookup between column names and human readable titles.
+
+### MagicNumber
+Extends JavaScript's Number class with additional formatting and conversion methods.
+
+**Methods:**
+- `format(str = ",", si = "long")` - Format number with thousand separators and SI units
+  - Input: Number, format string, SI unit style
+  - Output: Formatted string (e.g., `1234` → `"1,234"`, `1000000` → `"1 million"`)
+- `toWords(type = "cardinal", options = null)` - Convert to word representation
+  - Input: Number, type ("cardinal"/"ordinal"), options object
+  - Output: String (e.g., `5` → `"five"`, `21` → `"twenty-first"`)
+- `abs()` - Return absolute value as MagicNumber
+- `round(dp)` - Round to specified decimal places
 
 ## Data Processing Functions
 
