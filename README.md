@@ -2,11 +2,57 @@
 
 [![npm version](https://badge.fury.io/js/@onsvisual%2Frobo-utils.svg)](https://www.npmjs.com/package/@onsvisual/robo-utils)
 
-Utilities to make semi-automated journalism a bit easier. Can be used in any Javascript project (web browser or NodeJS) that is set up to use NPM packages.
+Utilities to make Natural Language Generation (NLG) for semi-automated journalism a bit easier. Can be used in any Javascript project (web browser or NodeJS) that is set up to use NPM packages.
 
-Some simpler usage examples can be found in [this Svelte REPL](https://svelte.dev/repl/817f1d35fd1f40bf80005715f40faa07?version=4.2.9).
+Some simple usage examples for robo-utils can be found in [this Svelte REPL](https://svelte.dev/repl/817f1d35fd1f40bf80005715f40faa07?version=4.2.9).
 
-More complex usage examples (making use of PUG templates rendered to JSON files) can be found in the ONS [robo-article](https://github.com/ONSvisual/robo-article) and [robo-embed](https://github.com/ONSvisual/robo-embed) templates.
+More complex usage examples (making use of [Pug](https://pugjs.org/api/getting-started.html) templates rendered to JSON files) can be found in the ONS [robo-article](https://github.com/ONSvisual/robo-article) and [robo-embed](https://github.com/ONSvisual/robo-embed) templates. You can also play with the PUG templates [this live editor](https://onsdigital.github.io/robo-editor/) in your browser.
+
+## Getting started
+
+### Install the library
+
+Install from the command line using NPM or your preferred package manager:
+
+```bash
+npm install @onsvisual/robo-journalism
+```
+
+### A simple example
+
+This example should give a sense of how the library works:
+
+```js
+// Import the MagicArray class and csv parser
+import { MagicArray, csvParse } from "@onsvisual/robo-utils";
+
+// Define some CSV data (typically loaded from an external file)
+const csv = `areacd,areanm,population
+E06000001,Hartlepool,98180
+E06000002,Middlesbrough,156161
+E06000003,Redcar and Cleveland,139228
+E06000004,Stockton-on-Tees,206800
+E06000005,Darlington,112489`;
+
+// Parse the data and load it into a MagicArray
+const rows = csvParse(csv);
+const data = new MagicArray.from(rows);
+
+// Get the row for an area of interest
+const d = data[0]; // Data row for Hartlepool
+
+// Get the name and code of the area
+console.log(d.getName(), d.getCode())
+// Output: "Hartlepool", "E06000001"
+
+// Return and format a data value for the area (uses d3-format strings)
+console.log(d.population.format(",");
+// Output: "98,180"
+
+// Get the rank of the area compared to other areas and return it in words
+console.log(d.getRank("population", "descending").toWords("ordinal");
+// Output: "Fifth"
+```
 
 ## Core Classes
 
