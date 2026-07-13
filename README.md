@@ -37,7 +37,7 @@ const rows = csvParse(csv);
 const data = new MagicArray.from(rows);
 
 // Get the row for an area of interest
-const d = data[0]; // Data row for Hartlepool
+const d = data.get("Hartlepool"); // Data row for Hartlepool
 
 // Get the name and code of the area
 console.log(d.getName(), d.getCode())
