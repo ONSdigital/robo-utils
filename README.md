@@ -305,7 +305,7 @@ robo.toWords(1, "ordinal", { dropFirst: true });
 // Returns: "" (empty string for first when dropped)
 
 // Get rank as ordinal word
-places.getRank(lookup["Birmingham"], "population_2011").toWords("ordinal");
+places.getRank(places.get("Birmingham"), "population_2011").toWords("ordinal");
 // Returns: "first"
 ```
 
@@ -339,15 +339,15 @@ robo.format(1234.567, ",.-2f");
 
 ```javascript
 // Get top 2 places by population, plus a specific place
-places.top("population_2011", 2, lookup["Rutland"]);
+places.top("population_2011", 2, places.get("Rutland"));
 // Returns: [Birmingham_data, Leeds_data, Rutland_data]
 
 // Get bottom 2 places by population, plus a specific place
-places.bottom("population_2011", 2, lookup["Rutland"]);
+places.bottom("population_2011", 2, places.get("Rutland"));
 // Returns: [Rutland_data, City_of_London_data, Isles_of_Scilly_data]
 
 // Get bottom 3 places, then remove one
-places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"]);
+places.bottom("population_2011", 3).remove(places.get("Isles of Scilly"));
 // Returns: [West_Somerset_data, City_of_London_data]
 ```
 
@@ -355,10 +355,10 @@ places.bottom("population_2011", 3).remove(lookup["Isles of Scilly"]);
 
 ```javascript
 // Get places ranked 5-10, with Rutland added and properly positioned
-places.between("p2020", 5, 10, "rank", "descending", lookup["Rutland"]).toList("areanm");
+places.between("p2020", 5, 10, "rank", "descending", places.get("Rutland")).toList("areanm");
 
 // Get places around your area, with a comparison place properly ranked
-places.between("p2020", place, 3, "around", "descending", lookup["Birmingham"]).toList("areanm");
+places.between("p2020", place, 3, "around", "descending", places.get("Birmingham")).toList("areanm");
 
 // Get places between different values, here between 1/2 to 1 million
 places.between("p2020", 500000, 1000000, "value").toList("areanm");
@@ -438,8 +438,8 @@ const results = data
 
 ```javascript
 // Generate descriptive text for rankings
-const rank = places.getRank(lookup["SomePlace"], "population_2011");
-const description = `${lookup["SomePlace"].areanm} ranks ${rank.toWords("ordinal")} by population`;
+const rank = places.getRank(places.get("SomePlace"), "population_2011");
+const description = `${places.get("SomePlace").getName()} ranks ${rank.toWords("ordinal")} by population`;
 ```
 
 ### Comparative Analysis Pattern
