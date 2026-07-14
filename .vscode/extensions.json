@@ -3,7 +3,6 @@
 		"davidanson.vscode-markdownlint",
 		"dbaeumer.vscode-eslint",
 		"editorconfig.editorconfig",
-		"esbenp.prettier-vscode",
-		"svelte.svelte-vscode"
+		"esbenp.prettier-vscode"
 	]
 }
