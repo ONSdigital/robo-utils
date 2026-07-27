@@ -454,3 +454,6 @@ const description = robo.breaksToWords(
 	"approximately"
 );
 ```
+
+Use the `|` to create an array in pug. E.g. 
+`prop.years #{prevYear}|#{latestYear}`
