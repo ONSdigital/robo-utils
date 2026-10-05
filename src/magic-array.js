@@ -45,7 +45,8 @@ export default class MagicArray extends Array {
 		return order === "ascending" ? this.ascending(key) : this.descending(key);
 	}
 	filterBy(key, val) {
-		return this.filter((d) => d[key] === val);
+		// Compare primitive values so MagicNumber (and Date) cells match plain values
+		return this.filter((d) => d[key]?.valueOf() === val?.valueOf());
 	}
 	toList(key, separator = [", ", " and "]) {
 		return toList(this, key, separator);

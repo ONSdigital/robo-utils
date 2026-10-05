@@ -26,6 +26,22 @@ describe("MagicArray.top() / bottom() / remove()", () => {
 	});
 });
 
+describe("MagicArray.filterBy()", () => {
+	test("matches string values", () => {
+		expect(names(places.filterBy("areanm", "Rutland"))).toEqual(["Rutland"]);
+	});
+
+	test("matches numeric (MagicNumber) values against plain numbers", () => {
+		const pop = places.get("Rutland").population_2011;
+		expect(names(places.filterBy("population_2011", pop.valueOf()))).toEqual(["Rutland"]);
+		expect(names(places.filterBy("population_2011", pop))).toEqual(["Rutland"]);
+	});
+
+	test("returns an empty array when nothing matches", () => {
+		expect(places.filterBy("areanm", "Atlantis").length).toBe(0);
+	});
+});
+
 describe("MagicArray.getRank()", () => {
 	test('ordinal rank for Birmingham population should be "first"', () => {
 		expect(places.getRank(places.get("Birmingham"), "population_2011").toWords("ordinal")).toBe(

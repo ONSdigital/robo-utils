@@ -26,10 +26,14 @@ export function autoType(object) {
 		var value = object[key].trim(),
 			number,
 			m;
-		if (!value) value = null;
+		// "_array" columns are always arrays, even if empty or a single number/boolean
+		if (key.slice(-6) === "_array" || value.includes("|")) {
+			value = value.split("|");
+			if (!value[value.length - 1]) value.pop();
+		} else if (!value) value = null;
 		else if (value === "true") value = true;
 		else if (value === "false") value = false;
-		else if (value === "NaN") value = NaN;
+		else if (value === "NaN") value = new MagicNumber(NaN);
 		else if (!isNaN((number = +value))) value = new MagicNumber(number);
 		else if (
 			(m = value.match(
@@ -38,9 +42,6 @@ export function autoType(object) {
 		) {
 			if (fixtz && !!m[4] && !m[7]) value = value.replace(/-/g, "/").replace(/T/, " ");
 			value = new Date(value);
-		} else if (key.slice(-6) === "_array" || value.includes("|")) {
-			value = typeof value === "string" ? value.split("|") : [];
-			if (!value[value.length - 1]) value.pop();
 		} else continue;
 		object[key] = value;
 	}

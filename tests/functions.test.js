@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import * as robo from "../src/functions.js";
+import MagicNumber from "../src/magic-number.js";
+import MagicObject from "../src/magic-object.js";
 
 describe("toWords()", () => {
 	test('toWords(1, "ordinal", {dropFirst: true}) should be ""', () => {
@@ -52,6 +54,113 @@ describe("format()", () => {
 
 	test("format(1234.567, ',.-2f') should return 1,200", () => {
 		expect(robo.format(1234.567, ",.-2f")).toBe("1,200");
+	});
+});
+
+describe("autoType()", () => {
+	const parse = (value, key = "v") => robo.autoType({ [key]: value })[key];
+
+	test("returns a MagicObject", () => {
+		expect(robo.autoType({ v: "1" })).toBeInstanceOf(MagicObject);
+	});
+
+	test.each([
+		["42", 42],
+		["-3.5", -3.5],
+		["0", 0],
+		["1e3", 1000],
+		[" 7 ", 7],
+		["Infinity", Infinity],
+		["NaN", NaN],
+		["2019", 2019] // a bare year is a number, not a date
+	])("%j becomes MagicNumber(%s)", (cell, expected) => {
+		const value = parse(cell);
+		expect(value).toBeInstanceOf(MagicNumber);
+		expect(value.valueOf()).toBe(expected);
+	});
+
+	test("numbers can use MagicNumber methods", () => {
+		expect(parse("1234567").format(",")).toBe("1,234,567");
+		expect(parse("NaN").format(",")).toBe("NaN");
+	});
+
+	test.each([
+		["true", true],
+		["false", false],
+		["", null],
+		["   ", null],
+		["TRUE", "TRUE"], // only lowercase booleans are converted
+		["1,234", "1,234"],
+		["E06000001", "E06000001"],
+		["Hartlepool", "Hartlepool"]
+	])("%j becomes %j", (cell, expected) => {
+		expect(parse(cell)).toBe(expected);
+	});
+
+	test.each([
+		["a|b", ["a", "b"]],
+		["a|b|", ["a", "b"]], // trailing separator is dropped
+		["1|2", ["1", "2"]] // array items are not type-converted
+	])("%j becomes an array", (cell, expected) => {
+		expect(parse(cell)).toEqual(expected);
+	});
+
+	test.each([
+		["a|b", ["a", "b"]],
+		["a", ["a"]],
+		["2020", ["2020"]],
+		["true", ["true"]],
+		["", []]
+	])("%j in an _array column becomes %j", (cell, expected) => {
+		expect(parse(cell, "years_array")).toEqual(expected);
+	});
+
+	describe("dates", () => {
+		test("date-only values are UTC midnight", () => {
+			const value = parse("2019-03-04");
+			expect(value).toBeInstanceOf(Date);
+			expect(value.toISOString()).toBe("2019-03-04T00:00:00.000Z");
+			expect(parse("2019-03").toISOString()).toBe("2019-03-01T00:00:00.000Z");
+		});
+
+		test("date-times without a timezone are local time", () => {
+			const value = parse("2019-07-04T12:30");
+			expect([value.getFullYear(), value.getMonth(), value.getDate()]).toEqual([2019, 6, 4]);
+			expect([value.getHours(), value.getMinutes()]).toEqual([12, 30]);
+		});
+
+		test("date-times with a timezone are respected", () => {
+			expect(parse("2019-07-04T12:30Z").toISOString()).toBe("2019-07-04T12:30:00.000Z");
+			expect(parse("2019-07-04T12:30+01:00").toISOString()).toBe("2019-07-04T11:30:00.000Z");
+		});
+	});
+});
+
+describe("csvParse()", () => {
+	const csv = 'areacd,areanm,value,tags\nE1,"Hull, City of",5,a|b\nE2,Leeds\n';
+
+	test("parses rows into MagicObjects with typed values", () => {
+		const rows = robo.csvParse(csv);
+		expect(rows.length).toBe(2);
+		expect(rows.columns).toEqual(["areacd", "areanm", "value", "tags"]);
+		expect(rows[0]).toBeInstanceOf(MagicObject);
+		expect(rows[0].areanm).toBe("Hull, City of");
+		expect(rows[0].value).toBeInstanceOf(MagicNumber);
+		expect(rows[0].tags).toEqual(["a", "b"]);
+	});
+
+	test("missing trailing cells become null", () => {
+		const row = robo.csvParse(csv)[1];
+		expect(row.value).toBeNull();
+		expect(row.tags).toBeNull();
+	});
+
+	test("strips a leading byte-order mark from the first column name", () => {
+		expect(robo.csvParse("﻿" + csv).columns[0]).toBe("areacd");
+	});
+
+	test("accepts a custom row function in place of autoType", () => {
+		expect(robo.csvParse(csv, (d) => d)[0].value).toBe("5");
 	});
 });
 
