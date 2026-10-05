@@ -5,7 +5,7 @@ Every function and class exported by `@onsvisual/robo-utils`. For an overview an
 **Contents**
 
 - [Loading data](#loading-data): [csvParse](#csvparse), [autoType](#autotype), [getData](#getdata)
-- [MagicArray](#magicarray): [get](#magicarrayget), [sortBy](#magicarraysortby), [filterBy](#magicarrayfilterby), [top](#magicarraytop), [bottom](#magicarraybottom), [between](#magicarraybetween), [getRank](#magicarraygetrank), [getRankWithTies](#magicarraygetrankwithties), [add](#magicarrayadd), [remove](#magicarrayremove), [trim](#magicarraytrim), [flip](#magicarrayflip), [toList](#magicarraytolist), [toData](#magicarraytodata), [refreshProps](#magicarrayrefreshprops)
+- [MagicArray](#magicarray): [get](#magicarrayget), [sortBy](#magicarraysortby), [filterBy](#magicarrayfilterby), [top](#magicarraytop), [bottom](#magicarraybottom), [between](#magicarraybetween), [getRank](#magicarraygetrank), [add](#magicarrayadd), [remove](#magicarrayremove), [trim](#magicarraytrim), [flip](#magicarrayflip), [toList](#magicarraytolist), [toData](#magicarraytodata), [refreshProps](#magicarrayrefreshprops)
 - [MagicObject](#magicobject): [getName](#magicobjectgetname), [getCode](#magicobjectgetcode), [getParent](#magicobjectgetparent), [getCountry](#magicobjectgetcountry), [highest](#magicobjecthighest), [lowest](#magicobjectlowest), [toData](#magicobjecttodata)
 - [MagicNumber](#magicnumber)
 - [Numbers](#numbers): [format](#format), [round](#round), [abs](#abs), [approx](#approx), [toWords](#towords), [toFraction](#tofraction)
@@ -213,24 +213,7 @@ places.between("pop_2021", place, 1, "around", "descending", null, true).toList(
 places.getRank(row, key, order = "descending")
 ```
 
-Returns a row's rank (1 = highest) as a [MagicNumber](#magicnumber).
-
-```js
-places.getRank(place, "pop_2021"); // 5
-places.getRank(place, "pop_2021", "ascending"); // 1
-places.getRank(place, "pop_2021").toWords("ordinal"); // "fifth"
-```
-
-> [!NOTE]
-> Rows with tied values can get different ranks. To count ties as equal, use [getRankWithTies](#magicarraygetrankwithties).
-
-### MagicArray.getRankWithTies
-
-```js
-places.getRankWithTies(row, key, order = "descending")
-```
-
-Returns a row's rank, counting tied values as equal: two rows tied for first are both ranked 1, and the next is ranked 3. Rows with no value are left out.
+Returns a row's rank (1 = highest, or lowest with `order = "ascending"`). Tied values share a rank: two rows tied for first are both ranked 1, and the next is ranked 3. Rows with no value are left out.
 
 The rank is a [MagicNumber](#magicnumber), so it can be used anywhere a number can, with these extras:
 
@@ -239,16 +222,16 @@ The rank is a [MagicNumber](#magicnumber), so it can be used anywhere a number c
 - `describe(label = "highest")`: the rank in words, with "joint" for ties (see [describeRank](#describerank))
 
 ```js
-const rank = places.getRankWithTies(place, "pop_2021");
+const rank = places.getRank(place, "pop_2021");
 +rank; // 5
 rank.isTied; // false
 rank.toWords("ordinal"); // "fifth"
 rank.describe("largest"); // "the fifth largest"
 
-places.getRankWithTies(place, "pop_2021", "ascending").describe("smallest"); // "the smallest"
+places.getRank(place, "pop_2021", "ascending").describe("smallest"); // "the smallest"
 
 // Darlington and the North East both have 0.27
-const tied = data.getRankWithTies(data.get("Darlington"), "pc_degree");
+const tied = data.getRank(data.get("Darlington"), "pc_degree");
 +tied; // 3
 tied.isTied; // true
 tied.ties; // ["E12000001"]
@@ -258,7 +241,7 @@ tied.describe(); // "the joint third highest"
 In a Pug template:
 
 ```pug
-p It is #{places.getRankWithTies(place, "pop_2021").describe("largest")} area.
+p It is #{places.getRank(place, "pop_2021").describe("largest")} area.
 ```
 
 ### MagicArray.add
@@ -622,7 +605,7 @@ compareTo(103, 100, { threshold: 0.05, texts: ["higher than", "similar to", "low
 describeRank(rank, label = "highest", tied = false)
 ```
 
-Describes a rank in words. To work out the rank and ties from data, use [MagicArray.getRankWithTies](#magicarraygetrankwithties), which has a `describe()` method that calls this function.
+Describes a rank in words. To work out the rank and ties from data, use [MagicArray.getRank](#magicarraygetrank), which returns a rank with a `describe()` method that calls this function.
 
 ```js
 describeRank(1); // "the highest"
@@ -886,7 +869,7 @@ If the template throws an error, `sections` is empty and the message is returned
 section#intro
   h2 Population #{place.getName("in")}
   p The population of #{place.getName()} #{place.pop_2011.describeChange(place.pop_2021)} between 2011 and 2021, to #{place.pop_2021.approx()}.
-  p It is #{places.getRankWithTies(place, "pop_2021").describe("largest")} local authority in the region.
+  p It is #{places.getRank(place, "pop_2021").describe("largest")} local authority in the region.
 section#chart
   prop.title Largest local authorities #{lookup[place.parentcd].getName("in")}
   prop.data= places.top("pop_2021", 3).toData({x: "pop_2021", y: "areanm"})

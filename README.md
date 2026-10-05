@@ -46,7 +46,7 @@ Then write sentences about it:
 `Its population ${place.pop_2011.describeChange(place.pop_2021)} from 2011.`;
 // "Its population increased by 0.3% from 2011."
 
-`It is ${places.getRankWithTies(place, "pop_2021").describe("largest")} area.`;
+`It is ${places.getRank(place, "pop_2021").describe("largest")} area.`;
 // "It is the fifth largest area."
 
 `Around ${place.pc_degree.toFraction()} adults have a degree.`;

@@ -1,6 +1,7 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import * as robo from "../src/functions.js";
 import MagicNumber from "../src/magic-number.js";
+import MagicArray from "../src/magic-array.js";
 import MagicObject from "../src/magic-object.js";
 
 describe("toWords()", () => {
@@ -10,6 +11,22 @@ describe("toWords()", () => {
 
 	test('toWords(10, "ordinal") should be "10th"', () => {
 		expect(robo.toWords(10, "ordinal")).toBe("10th");
+	});
+
+	test.each([
+		[5, "cardinal", undefined, "five"],
+		[9, "cardinal", undefined, "nine"],
+		[10, "cardinal", undefined, "10"],
+		[1500, "cardinal", undefined, "1,500"],
+		[15, "cardinal", { threshold: 20 }, "fifteen"],
+		[2500, "cardinal", { threshold: -1 }, "two thousand, five hundred"],
+		[2, "ordinal", undefined, "second"],
+		[21, "ordinal", undefined, "21st"],
+		[1, "ordinal", undefined, "first"],
+		[2, "ordinal", { dropFirst: true }, "second"]
+	])("toWords(%s, %j, %j) is %j", (value, type, options, expected) => {
+		expect(robo.toWords(value, type, options)).toBe(expected);
+		expect(n(value).toWords(type, options)).toBe(expected);
 	});
 });
 
@@ -30,6 +47,11 @@ describe("breaksToWords()", () => {
 		expect(robo.breaksToWords(-1)).toEqual("less");
 	});
 
+	test("1 is more than 0", () => {
+		expect(robo.breaksToWords(1)).toEqual("more");
+		expect(robo.breaksToWords(7, [4, 6], ["less", "about the same", "more"])).toEqual("more");
+	});
+
 	test('5 is "about the same" as 4 to 6', () => {
 		expect(robo.breaksToWords(5, [4, 6], ["less", "about the same", "more"])).toEqual(
 			"about the same"
@@ -44,8 +66,63 @@ describe("breaksToWords()", () => {
 });
 
 describe("formatName()", () => {
-	test("formatName('name', 'its') for name ending in an s should return s', not s's", () => {
-		expect(robo.formatName("Derbyshire Dales", "its")).toBe("the Derbyshire Dales'");
+	test.each([
+		["North West", null, "North West"],
+		["North West", "the", "the North West"],
+		["North West", "in", "in the North West"],
+		["North West", "its", "the North West's"],
+		["London", "the", "London"],
+		["London", "in", "in London"],
+		["London", "its", "London's"],
+		["Derbyshire Dales", "its", "the Derbyshire Dales'"], // not s's
+		["Isle of Wight", "in", "on the Isle of Wight"],
+		["City of London", "in", "in the City of London"],
+		["Vale of Glamorgan", "the", "the Vale of Glamorgan"],
+		["United Kingdom", "in", "in the United Kingdom"],
+		["Kingston upon Hull, City of", null, "Kingston upon Hull"],
+		["Herefordshire, County of", null, "Herefordshire"],
+		["Brighton & Hove", null, "Brighton and Hove"],
+		["East", "in", "in the East of England"]
+	])("formatName(%j, %j) is %j", (name, context, expected) => {
+		expect(robo.formatName(name, context)).toBe(expected);
+	});
+
+	test("mode other than default returns only the prefix", () => {
+		expect(robo.formatName("North West", "in", "prefix")).toBe("in the");
+		expect(robo.formatName("London", "in", "prefix")).toBe("in");
+	});
+});
+
+describe("getCodeKey() / getNameKey() / getParentKey()", () => {
+	test.each([
+		[{ areacd: "E1", areanm: "Foo", parentcd: "E12" }, ["areacd", "areanm", "parentcd"]],
+		[{ AREACD: "E1", AREANM: "Foo" }, ["AREACD", "AREANM", null]],
+		[{ LAD21CD: "E1", LAD21NM: "Foo", RGN21CD: "E12" }, ["LAD21CD", "LAD21NM", null]],
+		[{ code: "E1", name: "Foo", region: "R" }, ["code", "name", "region"]],
+		[{ id: "E1", label: "Foo", parent: "P" }, ["id", "label", "parent"]],
+		[{ hclnm: "Foo", areacd: "E1", areanm: "Bar" }, ["areacd", "hclnm", null]],
+		[{ foo: "a", bar: "b" }, ["foo", "foo", null]] // falls back to the first column
+	])("%j", (row, expected) => {
+		expect([robo.getCodeKey(row), robo.getNameKey(row), robo.getParentKey(row)]).toEqual(
+			expected
+		);
+	});
+
+	test("getCode(), getName() and getParent() use the detected keys", () => {
+		const row = { LAD21CD: "E1", LAD21NM: "Brighton & Hove", RGNCD: "E12", REGIONCD: "x" };
+		expect(robo.getCode(row)).toBe("E1");
+		expect(robo.getName(row, "in")).toBe("in Brighton and Hove");
+		expect(robo.getParent({ areacd: "E1", regioncd: "E12" })).toBe("E12");
+		expect(robo.getParent({ areacd: "E1" })).toBeUndefined();
+	});
+});
+
+describe("abs()", () => {
+	test("returns the absolute value as a MagicNumber", () => {
+		expect(robo.abs(-5)).toBeInstanceOf(MagicNumber);
+		expect(+robo.abs(-5)).toBe(5);
+		expect(+n(-2.5).abs()).toBe(2.5);
+		expect(n(-1234).abs().format()).toBe("1,234");
 	});
 });
 
@@ -78,6 +155,23 @@ describe("format()", () => {
 	test("format(1234.567, ',.-2f') should return 1,200", () => {
 		expect(robo.format(1234.567, ",.-2f")).toBe("1,200");
 	});
+
+	test.each([
+		[1234, undefined, undefined, "1,234"],
+		[-1234, undefined, undefined, "−1,234"],
+		[1234567, ".3s", undefined, "1.23 million"],
+		[1234567, ".3s", "short", "1.23mn"],
+		[1234567000, ".2s", undefined, "1.2 billion"],
+		[1234567000, ".2s", "short", "1.2bn"],
+		[1.5e12, ".2s", undefined, "1.5 trillion"],
+		[12345, ".2s", undefined, "12 thousand"],
+		[1234.5, "$,.2f", undefined, "£1,234.50"],
+		[0.123, ".1%", undefined, "12.3%"],
+		[987654, ",.-3f", undefined, "988,000"]
+	])("format(%s, %j, %j) is %j", (value, str, si, expected) => {
+		expect(robo.format(value, str, si)).toBe(expected);
+		expect(n(value).format(str, si)).toBe(expected);
+	});
 });
 
 describe("toData()", () => {
@@ -94,6 +188,34 @@ describe("toData()", () => {
 		]);
 		expect(String(data)).toBe(JSON.stringify(data));
 		expect(Object.keys(data)).toEqual(["0", "1"]); // toString is not enumerable
+	});
+
+	test("arrays of columns create one row per column, with array labels", () => {
+		const wide = [
+			{ areanm: "Foo", p2011: 10, p2021: 12 },
+			{ areanm: "Bar", p2011: 20, p2021: 18 }
+		];
+		expect(
+			robo.toData(wide, { x: ["2011", "2021"], y: ["p2011", "p2021"], z: "areanm" })
+		).toEqual([
+			{ z: "Foo", x: "2011", y: 10 },
+			{ z: "Foo", x: "2021", y: 12 },
+			{ z: "Bar", x: "2011", y: 20 },
+			{ z: "Bar", x: "2021", y: 18 }
+		]);
+	});
+
+	test("props with empty values are left out", () => {
+		expect(robo.toData(rows, { x: "v", y: null, z: "" })).toEqual([{ x: 1 }, { x: 2 }]);
+	});
+
+	test("returns empty data (and warns) if it fails", () => {
+		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(robo.toData(rows, null)).toEqual([]);
+		expect(robo.toData(rows, null, "stringify")).toBe("[]");
+		expect(robo.toData(rows, null, "protect")).toBe("§[]§");
+		expect(warn).toHaveBeenCalledTimes(3);
+		warn.mockRestore();
 	});
 
 	test("stringify and protect modes return strings", () => {
@@ -417,6 +539,76 @@ describe("getExtreme()", () => {
 		expect(() => robo.getExtreme({ a: 10 }, ["a"], mode)).toThrow(
 			"Mode must be 'highest', 'lowest', 'max', 'min', 'absolute_highest', 'absolute_lowest', 'absolute_max', or 'absolute_min'."
 		);
+	});
+});
+
+describe("aAn()", () => {
+	test.each([
+		["apple", "an apple"],
+		["hour", "an hour"],
+		["European", "a European"],
+		["house", "a house"]
+	])("aAn(%j) is %j", (word, expected) => {
+		expect(robo.aAn(word)).toBe(expected);
+	});
+
+	test("mode other than default returns only the article", () => {
+		expect(robo.aAn("apple", "article")).toBe("an");
+	});
+});
+
+describe("capitalise()", () => {
+	test.each([
+		["north west", "North west"],
+		["a", "A"],
+		["", ""]
+	])("capitalise(%j) is %j", (str, expected) => {
+		expect(robo.capitalise(str)).toBe(expected);
+	});
+});
+
+describe("moreLess()", () => {
+	test.each([
+		[5, undefined, "more"],
+		[-5, undefined, "less"],
+		[0, undefined, "same"],
+		[5, ["higher", "lower", "the same"], "higher"]
+	])("moreLess(%s, %j) is %j", (diff, texts, expected) => {
+		expect(robo.moreLess(diff, texts)).toBe(expected);
+		expect(robo.moreLess(n(diff), texts)).toBe(expected);
+	});
+});
+
+describe("ascending() / descending()", () => {
+	test("sort numbers and MagicNumbers", () => {
+		expect([3, 1, 2].sort(robo.ascending)).toEqual([1, 2, 3]);
+		expect([3, 1, 2].sort(robo.descending)).toEqual([3, 2, 1]);
+		expect([n(3), n(1), n(2)].sort(robo.ascending).map(Number)).toEqual([1, 2, 3]);
+		expect(["b", "a"].sort(robo.ascending)).toEqual(["a", "b"]);
+	});
+
+	test.each([
+		[1, 2, -1, 1],
+		[2, 1, 1, -1],
+		[1, 1, 0, 0],
+		[null, 1, NaN, NaN],
+		[1, undefined, NaN, NaN]
+	])("(%s, %s)", (a, b, asc, desc) => {
+		expect(robo.ascending(a, b)).toBe(asc);
+		expect(robo.descending(a, b)).toBe(desc);
+	});
+});
+
+describe("getData()", () => {
+	afterEach(() => vi.unstubAllGlobals());
+
+	test("fetches and parses a CSV into a MagicArray", async () => {
+		const fetch = vi.fn(async () => ({ text: async () => "areacd,areanm,value\nE1,Foo,5" }));
+		vi.stubGlobal("fetch", fetch);
+		const data = await robo.getData("https://example.com/data.csv");
+		expect(fetch).toHaveBeenCalledWith("https://example.com/data.csv");
+		expect(data).toBeInstanceOf(MagicArray);
+		expect(data.get("Foo").value).toBeInstanceOf(MagicNumber);
 	});
 });
 

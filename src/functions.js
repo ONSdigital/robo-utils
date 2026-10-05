@@ -148,8 +148,9 @@ export function getCodeKey(obj) {
 		let i = lc.indexOf(key);
 		if (i > -1) return keys[i];
 	}
-	let key = lc.find((key) => key.toLowerCase().slice(-2) === "cd");
-	return key ? key : keys[0];
+	// Return the original key, not the lowercased one (eg. "LAD21CD")
+	const i = lc.findIndex((key) => key.slice(-2) === "cd");
+	return i > -1 ? keys[i] : keys[0];
 }
 
 export function getNameKey(obj) {
@@ -159,8 +160,9 @@ export function getNameKey(obj) {
 		let i = lc.indexOf(key);
 		if (i > -1) return keys[i];
 	}
-	let key = lc.find((key) => key.toLowerCase().slice(-2) === "nm");
-	return key ? key : keys[0];
+	// Return the original key, not the lowercased one (eg. "LAD21NM")
+	const i = lc.findIndex((key) => key.slice(-2) === "nm");
+	return i > -1 ? keys[i] : keys[0];
 }
 
 export function getParentKey(obj) {

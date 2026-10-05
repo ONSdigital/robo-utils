@@ -46,6 +46,16 @@ describe("MagicArray.get() and lookup", () => {
 		expect(arr.get("Leeds")).toBe(leeds);
 	});
 
+	test("codeKey and parentKey can be set", () => {
+		const arr = places.trim(2);
+		arr.codeKey = "areanm";
+		arr.nameKey = "areanm";
+		expect(arr.get(arr[0].areacd)).toBeUndefined();
+		expect(arr.get(arr[0].areanm)).toBe(arr[0]);
+		arr.parentKey = "areacd";
+		expect(arr.parentKey).toBe("areacd");
+	});
+
 	test("lookup and column keys can still be set", () => {
 		const arr = places.trim(2);
 		arr.lookup = { custom: leeds };
@@ -105,15 +115,25 @@ describe("MagicArray.filterBy()", () => {
 	});
 });
 
-describe("MagicArray.getRank()", () => {
-	test('ordinal rank for Birmingham population should be "first"', () => {
-		expect(places.getRank(places.get("Birmingham"), "population_2011").toWords("ordinal")).toBe(
-			"first"
-		);
+describe("MagicArray.sortBy() / ascending() / descending() / flip()", () => {
+	const top3 = ["Birmingham", "Leeds", "Sheffield"];
+
+	test("sort by a column, returning a copy", () => {
+		expect(names(places.descending("population_2011").trim(3))).toEqual(top3);
+		expect(names(places.sortBy("population_2011", "descending").trim(3))).toEqual(top3);
+		expect(names(places.ascending("population_2011").trim(-3).flip())).toEqual(top3);
+		expect(names(places.sortBy("population_2011").trim(1))).toEqual(["Isles of Scilly"]);
+		expect(places[0].areanm).toBe("Adur"); // original order is unchanged
+	});
+
+	test("flip() reverses a copy", () => {
+		const arr = places.trim(3);
+		expect(names(arr.flip())).toEqual(names(arr).reverse());
+		expect(names(arr)).toEqual(["Adur", "Allerdale", "Amber Valley"]);
 	});
 });
 
-describe("MagicArray.getRankWithTies()", () => {
+describe("MagicArray.getRank()", () => {
 	// B and C are tied on 20
 	const rows = MagicArray.from(
 		csvParse("areacd,areanm,v\nE1,A,10\nE2,B,20\nE3,C,20\nE4,D,5\nE5,E,")
@@ -125,7 +145,7 @@ describe("MagicArray.getRankWithTies()", () => {
 		["C", 1, ["E2"], "the joint highest"],
 		["D", 4, [], "the fourth highest"]
 	])("%s is ranked %i, tied with %j", (name, rank, ties, text) => {
-		const result = rows.getRankWithTies(rows.get(name), "v");
+		const result = rows.getRank(rows.get(name), "v");
 		expect(result).toBeInstanceOf(MagicNumber);
 		expect(+result).toBe(rank);
 		expect(result.isTied).toBe(ties.length > 0);
@@ -134,31 +154,47 @@ describe("MagicArray.getRankWithTies()", () => {
 	});
 
 	test("ascending order with a custom label", () => {
-		const result = rows.getRankWithTies(rows.get("B"), "v", "ascending");
+		const result = rows.getRank(rows.get("B"), "v", "ascending");
 		expect([+result, result.isTied, result.ties]).toEqual([3, true, ["E3"]]);
 		expect(result.describe("smallest")).toBe("the joint third smallest");
-		expect(rows.getRankWithTies(rows.get("D"), "v", "ascending").describe("smallest")).toBe(
+		expect(rows.getRank(rows.get("D"), "v", "ascending").describe("smallest")).toBe(
 			"the smallest"
 		);
 	});
 
 	test("can be used like a number", () => {
-		const result = rows.getRankWithTies(rows.get("A"), "v");
+		const result = rows.getRank(rows.get("A"), "v");
 		expect(result.toWords("ordinal")).toBe("third");
 		expect(result + 1).toBe(4);
 		expect(result > 2).toBe(true);
 		expect(JSON.stringify({ rank: result })).toBe('{"rank":3}');
 	});
 
-	test("matches getRank when there are no ties", () => {
-		for (const place of places.trim(20)) {
-			expect(+places.getRankWithTies(place, "population_2011")).toBe(
-				+places.getRank(place, "population_2011")
-			);
-		}
-		expect(
-			places.getRankWithTies(places.get("Leeds"), "population_2011").describe("largest")
-		).toBe("the second largest");
+	test("works with the census data", () => {
+		const birmingham = places.getRank(places.get("Birmingham"), "population_2011");
+		expect(birmingham.toWords("ordinal")).toBe("first");
+		expect(birmingham.toWords("ordinal", { dropFirst: true })).toBe("");
+		expect(places.getRank(places.get("Leeds"), "population_2011").describe("largest")).toBe(
+			"the second largest"
+		);
+	});
+
+	test("works with plain (non-MagicNumber) values", () => {
+		const plain = MagicArray.from([
+			{ areacd: "E1", v: 10 },
+			{ areacd: "E2", v: 20 },
+			{ areacd: "E3", v: 20 }
+		]);
+		expect(plain.map((d) => +plain.getRank(d, "v"))).toEqual([3, 1, 1]);
+	});
+});
+
+describe("MagicArray.toList()", () => {
+	test("joins a column into a list", () => {
+		const top3 = places.top("population_2011", 3);
+		expect(top3.toList("areanm")).toBe("Birmingham, Leeds and Sheffield");
+		expect(top3.toList("areanm", [", ", " or "])).toBe("Birmingham, Leeds or Sheffield");
+		expect(top3.toList((d) => d.areacd)).toBe("E08000025, E08000035 and E08000019");
 	});
 });
 
@@ -278,6 +314,14 @@ describe("MagicArray.between()", () => {
 			);
 			expect(names(withTarget)).toEqual(included);
 			expect(names(withoutTarget)).toEqual(included.filter((nm) => nm !== target.areanm));
+		});
+
+		test("uses the target's position, not its (shared) rank, when values are tied", () => {
+			const tied = MagicArray.from(
+				csvParse("areacd,areanm,v\nE1,A,40\nE2,B,30\nE3,C,30\nE4,D,30\nE5,E,10")
+			);
+			expect(names(tied.between("v", tied.get("D"), 1, "around"))).toEqual(["C", "D", "E"]);
+			expect(names(tied.between("v", tied.get("B"), 1, "around"))).toEqual(["A", "B", "C"]);
 		});
 
 		test("excludeTarget matches removing the target afterwards", () => {

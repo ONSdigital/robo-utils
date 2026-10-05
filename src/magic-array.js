@@ -92,12 +92,8 @@ export default class MagicArray extends Array {
 	toData(props, mode = null) {
 		return toData(this, props, mode);
 	}
-	getRank(item, key, order = "descending") {
-		const sorted = this.sortBy(key, order);
-		return new MagicNumber(sorted.map((d) => d[key]).indexOf(item[key]) + 1);
-	}
 	// Rank counting tied values as equal (1, 1, 3), with the codes of any other tied items
-	getRankWithTies(item, key, order = "descending") {
+	getRank(item, key, order = "descending") {
 		const value = +item[key];
 		const rows = this.filter((d) => d[key] != null);
 		const better = rows.filter((d) =>
@@ -168,10 +164,11 @@ export default class MagicArray extends Array {
 			// Get items around a specific item's rank
 			const targetItem = start; // start is the target item
 			const range = end; // end is the range (+/- positions)
-			const targetRank = this.getRank(targetItem, key, order);
-			const startRank = Math.max(1, targetRank - range);
-			const endRank = Math.min(this.length, targetRank + range);
+			// Use the target's position in the sorted array (not its rank, which is shared by ties)
 			const sorted = this.sortBy(key, order);
+			const position = sorted.findIndex((d) => getCode(d) === getCode(targetItem)) + 1;
+			const startRank = Math.max(1, position - range);
+			const endRank = Math.min(this.length, position + range);
 			const startIndex = startRank - 1;
 			const endIndex = endRank;
 			result = MagicArray.from(sorted.slice(startIndex, endIndex));
