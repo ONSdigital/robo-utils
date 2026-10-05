@@ -174,6 +174,12 @@ describe("<mark> text colour", () => {
 		);
 	});
 
+	test("applies inside props too", () => {
+		expect(
+			section('section\n  prop.title #[mark(style="background-color: #ffffff") a]').title
+		).toBe('<mark style="background-color: #ffffff; color: black;">a</mark>');
+	});
+
 	test("leaves an explicit text colour alone", () => {
 		const content = section(
 			'section\n  p #[mark(style="background-color: #206095; color: red") a]'
@@ -190,25 +196,11 @@ describe("<mark> text colour", () => {
 	});
 });
 
-describe("spacing fixes", () => {
-	test("adds a space after an inline tag that Pug joins to the next word", () => {
-		expect(section("section\n  p\n    strong 5\n    | people").content).toBe(
-			"<p><strong>5</strong> people</p>"
-		);
-	});
-
-	test("does not add a space before punctuation, whitespace or the end", () => {
-		expect(
-			section("section\n  p #[strong 5]. #[strong 6], #[em 7]) #[b 8]! #[i 9]'s #[a 10]")
-				.content
-		).toBe(
-			"<p><strong>5</strong>. <strong>6</strong>, <em>7</em>) <b>8</b>! <i>9</i>'s <a>10</a></p>"
-		);
-	});
-
-	test("removes spaces before % and pp, and after currency symbols", () => {
-		expect(section("section\n  p 5 % and 4 pp and £ 10 and $ 3").content).toBe(
-			"<p>5% and 4pp and £10 and $3</p>"
+describe("content", () => {
+	test("keeps Pug's spacing and text unchanged", () => {
+		const text = "5 % and 4 pp and £ 10, #[strong 6]. #[em 7]§ and #[b 8] more";
+		expect(section(`section\n  p ${text}`).content).toBe(
+			"<p>5 % and 4 pp and £ 10, <strong>6</strong>. <em>7</em>§ and <b>8</b> more</p>"
 		);
 	});
 });

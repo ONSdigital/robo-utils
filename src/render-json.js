@@ -8,18 +8,18 @@ const parse = parser?.default?.parse ? parser.default.parse : parser?.parse ? pa
 const COMMENT_NODE = 8;
 
 // Add a black or white text colour to <mark> tags for contrast with their background colour
-function setMarkColor(tag) {
-	const style = tag.match(/style="([^"]*)"/)?.[1];
+function setMarkColor(mark) {
+	const style = mark.getAttribute("style");
 	const background = style?.match(/background-color:\s*([^;]+)/)?.[1].trim();
-	if (!background || /(^|[;\s])color\s*:/.test(style)) return tag;
+	if (!background || /(^|[;\s])color\s*:/.test(style)) return;
 	const rgb = parseColor(background).rgb;
-	if (!rgb) return tag;
+	if (!rgb) return;
 	const color = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 > 125 ? "black" : "white";
 	const newStyle = style.replace(
 		/background-color:\s*[^;]+;?/,
 		(match) => `${match.replace(/;$/, "")}; color: ${color};`
 	);
-	return tag.replace(`style="${style}"`, () => `style="${newStyle}"`);
+	mark.setAttribute("style", newStyle);
 }
 
 // Cycle through LAs (and null for "no area selected")
@@ -41,23 +41,14 @@ export default function renderJSON(template, place, places, lookup, pug = window
 			rows: places,
 			lookup,
 			...functions,
-			MagicArray,
-			language: "en_US"
+			MagicArray
 		});
-		// Fix to remove spaces added between numbers and prefix/suffix symbols by Rosae
-		sections_raw = sections_raw.replace(/(?<=\d)\s+((?=%)|(?=p{2}))/g, "");
-		sections_raw = sections_raw.replace(/(?<=[£€\$])\s+(?=\d)/g, "");
-		// Fix to add a space after closing inline tags when Pug has joined them to the next word
-		sections_raw = sections_raw.replace(
-			/(?<=<\/(?:span|mark|strong|em|a|b|i)>)(?=[^\s.,;:!?)\]}<'’%])/g,
-			" "
-		);
-
-		// Process <mark> tags for text colour contrast
-		sections_raw = sections_raw.replace(/<mark\b[^>]*>/g, setMarkColor);
 
 		// Process HTML output of Pug into structured JSON
 		let root = parse(sections_raw, { comment: true }); // Convert HTML string into DOM-type object for parsing
+
+		// Process <mark> tags for text colour contrast
+		root.querySelectorAll("mark").forEach(setMarkColor);
 
 		function parseSection(node) {
 			let obj = {};

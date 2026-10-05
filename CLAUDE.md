@@ -34,7 +34,7 @@ The public API is whatever `index.mjs` re-exports — a new function in `src/fun
 
 **Formatting.** `format()` extends d3-format with negative decimal places (e.g. `",.-2f"` rounds to hundreds) and replaces SI suffixes with words (`"long"`: "thousand"/"million"…, otherwise `mn`/`bn`/`tn`), using a UK `£` locale. `toWords` uses the vendored `src/number-to-words.js`; numbers above `threshold` (default 9) stay as digits.
 
-**Template rendering.** `renderJSON` renders a Pug template (Pug is passed in, defaulting to `window.pug`) with `place`/`row`, `places`/`rows`, `lookup`, `MagicArray` and every export of `functions.js` in scope, then applies regex post-fixes (remove spaces around `%`/`£`, add spaces after closing inline tags, set `<mark>` text colour for contrast against its background colour). It also:
+**Template rendering.** `renderJSON` renders a Pug template (Pug is passed in, defaulting to `window.pug`) with `place`/`row`, `places`/`rows`, `lookup`, `MagicArray` and every export of `functions.js` in scope and parses the HTML output, leaving Pug's text unchanged except that `<mark>` tags with a `background-color` get a black or white text `color` for contrast. It also:
 
 - parses the HTML with node-html-parser into `{ sections, place, region, ctry, notes, error }`, where each `<section>` becomes an object (`id`, `class`→`type`, nested `sections`, `content` HTML), `<prop class="x">` children become fields (`prop.data` is JSON-parsed; `|`-separated text becomes an array — in Pug, `prop.years #{a}|#{b}`), and top-level HTML comments (Pug `//`, not `//-`) become `notes`;
 - catches Pug errors and returns them in `error` rather than throwing.
