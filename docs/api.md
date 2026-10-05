@@ -768,8 +768,8 @@ getParentKey(row)
 
 Return the name of the column holding a row's code, name or parent code:
 
-- **Code:** `areacd`, `code` or `id`, then any column ending `cd`, then the first column.
-- **Name:** `hclnm`, `areanm`, `name`, `label` or `areacd`, then any column ending `nm`, then the first column.
+- **Code:** `areacd`, `code` or `id`, then a column ending `code`, then one ending `cd`, then the first column.
+- **Name:** `hclnm`, `areanm`, `name` or `label`, then a column ending `name`, then one ending `nm`, then `areacd`, then the first column.
 - **Parent:** `parentcd`, `parent`, `regioncd` or `region`, otherwise `null`.
 
 Matching ignores case.

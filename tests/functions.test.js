@@ -101,6 +101,10 @@ describe("getCodeKey() / getNameKey() / getParentKey()", () => {
 		[{ code: "E1", name: "Foo", region: "R" }, ["code", "name", "region"]],
 		[{ id: "E1", label: "Foo", parent: "P" }, ["id", "label", "parent"]],
 		[{ hclnm: "Foo", areacd: "E1", areanm: "Bar" }, ["areacd", "hclnm", null]],
+		[{ lad_code: "E1", lad_name: "Foo" }, ["lad_code", "lad_name", null]],
+		[{ value: 1, LA_CODE: "E1", LA_NAME: "Foo" }, ["LA_CODE", "LA_NAME", null]],
+		[{ areacd: "E1", lad21nm: "Foo" }, ["areacd", "lad21nm", null]], // a name column beats areacd
+		[{ value: 1, areacd: "E1" }, ["areacd", "areacd", null]], // areacd is the last resort for names
 		[{ foo: "a", bar: "b" }, ["foo", "foo", null]] // falls back to the first column
 	])("%j", (row, expected) => {
 		expect([robo.getCodeKey(row), robo.getNameKey(row), robo.getParentKey(row)]).toEqual(

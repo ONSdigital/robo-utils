@@ -141,28 +141,32 @@ export function formatName(name, context = null, mode = "default") {
 	return mode === "default" ? prefix + name : prefix.slice(0, -1);
 }
 
-export function getCodeKey(obj) {
+// Find a column by name, then by suffix, then fall back (matching ignores case,
+// but the original key is returned, eg. "LAD21CD")
+function findKey(obj, names, suffixes, fallbacks = []) {
 	const keys = Object.keys(obj);
 	const lc = keys.map((key) => key.toLowerCase());
-	for (let key of ["areacd", "code", "id"]) {
-		let i = lc.indexOf(key);
+	for (const name of names) {
+		const i = lc.indexOf(name);
 		if (i > -1) return keys[i];
 	}
-	// Return the original key, not the lowercased one (eg. "LAD21CD")
-	const i = lc.findIndex((key) => key.slice(-2) === "cd");
-	return i > -1 ? keys[i] : keys[0];
+	for (const suffix of suffixes) {
+		const i = lc.findIndex((key) => key.endsWith(suffix));
+		if (i > -1) return keys[i];
+	}
+	for (const name of fallbacks) {
+		const i = lc.indexOf(name);
+		if (i > -1) return keys[i];
+	}
+	return keys[0];
+}
+
+export function getCodeKey(obj) {
+	return findKey(obj, ["areacd", "code", "id"], ["code", "cd"]);
 }
 
 export function getNameKey(obj) {
-	const keys = Object.keys(obj);
-	const lc = keys.map((key) => key.toLowerCase());
-	for (let key of ["hclnm", "areanm", "name", "label", "areacd"]) {
-		let i = lc.indexOf(key);
-		if (i > -1) return keys[i];
-	}
-	// Return the original key, not the lowercased one (eg. "LAD21NM")
-	const i = lc.findIndex((key) => key.slice(-2) === "nm");
-	return i > -1 ? keys[i] : keys[0];
+	return findKey(obj, ["hclnm", "areanm", "name", "label"], ["name", "nm"], ["areacd"]);
 }
 
 export function getParentKey(obj) {

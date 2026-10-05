@@ -2,7 +2,13 @@
 
 Changes that affect templates or code using this library. Functions are documented in the [API reference](docs/api.md).
 
-## 0.6.0 (unreleased)
+## 0.6.1 (unreleased)
+
+### Changes
+
+- **Code and name columns are detected in a slightly different order.** `getCodeKey()` and `getNameKey()` (also used by `MagicArray`, `getName()` and `getCode()`) now look for columns ending `code` and `name` (eg. `lad_name`), and only use `areacd` as the name column if there's no column ending `name` or `nm`. Previously `{ areacd, lad21nm }` used `areacd` as the name.
+
+## 0.6.0
 
 Changes since 0.4.0. (0.5.0 was a test release and shouldn't be used.)
 
