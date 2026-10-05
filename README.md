@@ -13,7 +13,7 @@ Some simple usage examples can be found in [this Svelte REPL](https://svelte.dev
 Install from the command line using NPM or your preferred package manager:
 
 ```bash
-npm install @onsvisual/robo-journalism
+npm install @onsvisual/robo-utils
 ```
 
 ### A simple example
@@ -358,7 +358,9 @@ places.bottom("population_2011", 3).remove(places.get("Isles of Scilly"));
 places.between("p2020", 5, 10, "rank", "descending", places.get("Rutland")).toList("areanm");
 
 // Get places around your area, with a comparison place properly ranked
-places.between("p2020", place, 3, "around", "descending", places.get("Birmingham")).toList("areanm");
+places
+	.between("p2020", place, 3, "around", "descending", places.get("Birmingham"))
+	.toList("areanm");
 
 // Get places between different values, here between 1/2 to 1 million
 places.between("p2020", 500000, 1000000, "value").toList("areanm");
@@ -455,5 +457,5 @@ const description = robo.breaksToWords(
 );
 ```
 
-Use the `|` to create an array in pug. E.g. 
+Use the `|` to create an array in pug. E.g.
 `prop.years #{prevYear}|#{latestYear}`
