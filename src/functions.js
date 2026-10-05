@@ -60,7 +60,8 @@ export function makeLookup(items, codeKey, nameKey) {
 // Reliable way to check if a variable is a non-null number
 export const isNumeric = (val) => isFinite(val) && val !== null;
 
-export const round = roundTo;
+// Accepts MagicNumbers (round-to only accepts primitive numbers)
+export const round = (val, dp) => roundTo(+val, dp);
 
 export const abs = (val) => new MagicNumber(Math.abs(val));
 
@@ -96,7 +97,7 @@ export function toWords(val, type = "cardinal", options = { threshold: 9, dropFi
 }
 
 export function toList(array, key, separator = [", ", " and "]) {
-	const map = typeof key === "function" ? key : (d) => d[key];
+	const map = typeof key === "function" ? key : key == null ? (d) => d : (d) => d[key];
 	const words = array.map(map);
 	return words.length < 2
 		? words.join()
@@ -173,7 +174,7 @@ export function getParentKey(obj) {
 }
 
 export function getProps(item) {
-	if (typeof item !== "object") return {};
+	if (!item || typeof item !== "object") return {};
 	return {
 		codeKey: getCodeKey(item),
 		nameKey: getNameKey(item),
@@ -398,3 +399,130 @@ export const pluralise = (str, count = undefined, inclusive = false) =>
 	count ? pluralize(str, count, inclusive) : pluralize.plural(str);
 
 export const singularise = (str) => pluralize.singular(str);
+
+// Describe the change from one value to another, eg. "increased by 5.2%"
+// type: "percent" (relative change), "absolute" (difference) or "pp" (difference in percentage points)
+export function describeChange(from, to, options = {}) {
+	const {
+		type = "percent",
+		str = type === "absolute" ? "," : ".1f",
+		texts = ["increased", "decreased", "was unchanged"],
+		threshold = 0
+	} = options;
+	if (!isNumeric(from) || !isNumeric(to)) return "";
+	const diff = +to - +from;
+	const change = type === "percent" ? (diff / Math.abs(+from)) * 100 : diff;
+	if (!isFinite(change)) return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
+	const amount = format(Math.abs(change), str);
+	// Changes within the threshold, or that round to zero, are described as unchanged
+	if (Math.abs(change) <= threshold || !/[1-9]/.test(amount)) return texts[2];
+	const units =
+		type === "percent"
+			? "%"
+			: type === "pp"
+				? +amount === 1
+					? " percentage point"
+					: " percentage points"
+				: "";
+	return `${diff > 0 ? texts[0] : texts[1]} by ${amount}${units}`;
+}
+
+// Round to significant figures and hedge the result, eg. 5.97 => "almost 6", 1.03e6 => "just over 1 million"
+export function approx(val, sf = 2, options = {}) {
+	const { texts = ["almost", "around", "just over"], threshold = 0.05 } = options;
+	const value = +val;
+	const rounded = +value.toPrecision(sf);
+	const text = format(rounded, Math.abs(rounded) >= 1e6 ? `.${sf}~s` : `,.${sf}~r`);
+	const diff = (Math.abs(value) - Math.abs(rounded)) / Math.abs(rounded);
+	if (diff === 0 || !isFinite(diff)) return text;
+	const hedge = Math.abs(diff) > threshold ? texts[1] : diff < 0 ? texts[0] : texts[2];
+	return `${hedge} ${text}`;
+}
+
+const fractionNames = {
+	2: ["half", "halves"],
+	3: ["third", "thirds"],
+	4: ["quarter", "quarters"],
+	5: ["fifth", "fifths"],
+	6: ["sixth", "sixths"],
+	7: ["seventh", "sevenths"],
+	8: ["eighth", "eighths"],
+	9: ["ninth", "ninths"],
+	10: ["tenth", "tenths"]
+};
+
+// Describe a proportion (0 to 1) as the nearest simple fraction
+// mode "in" => "one in five", mode "fraction" => "a fifth"
+export function toFraction(val, mode = "in", denominators = [2, 3, 4, 5, 10]) {
+	const value = +val;
+	if (!(value > 0 && value < 1)) return "";
+	// Small proportions are always "one in x"
+	if (value < 1 / Math.max(...denominators)) return `one in ${toWords(Math.round(1 / value))}`;
+	let best;
+	for (const d of [...denominators].sort(ascending)) {
+		const n = Math.min(Math.max(Math.round(value * d), 1), d - 1);
+		const error = Math.abs(value - n / d);
+		if (!best || error < best.error) best = { n, d, error };
+	}
+	const { n, d } = best;
+	if (mode !== "fraction") return `${toWords(n)} in ${toWords(d)}`;
+	if (n === 1) return d === 2 ? "half" : `a ${fractionNames[d][0]}`;
+	return `${toWords(n)}-${fractionNames[d][1]}`;
+}
+
+// Describe a rank, eg. 1 => "the highest", 2 => "the second highest", 12 (tied) => "the joint 12th highest"
+export function describeRank(rank, label = "highest", tied = false) {
+	const ordinal = toWords(rank, "ordinal", { dropFirst: true });
+	return ["the", tied ? "joint" : "", ordinal, label].filter((d) => d).join(" ");
+}
+
+const dateFormats = {
+	day: { day: "numeric", month: "long", year: "numeric" },
+	month: { month: "long", year: "numeric" },
+	year: { year: "numeric" }
+};
+
+// Accept a Date, a date string or a year (number)
+function toDate(val) {
+	if (val instanceof Date) return val;
+	if (typeof val === "string" && isNaN(+val)) return new Date(val);
+	return new Date(Date.UTC(+val, 0, 1));
+}
+
+function formatParts(date, options) {
+	return new Intl.DateTimeFormat("en-GB", { ...options, timeZone: "UTC" }).format(date);
+}
+
+// Format a date in ONS style, eg. "4 March 2024", "March 2024" or "2024" (unit = "day", "month" or "year")
+// Dates are formatted in UTC, to match dates parsed from CSV files
+export function formatDate(date, unit = "day") {
+	if (!dateFormats[unit]) throw new Error("Unit must be 'day', 'month' or 'year'.");
+	return formatParts(toDate(date), dateFormats[unit]);
+}
+
+// Format a period in ONS style, eg. "2010 to 2020", "January to March 2024", "4 to 15 March 2024"
+export function formatPeriod(start, end, unit = "year") {
+	const [a, b] = [toDate(start), toDate(end)];
+	const last = formatDate(b, unit);
+	if (formatDate(a, unit) === last) return last;
+	const sameYear = a.getUTCFullYear() === b.getUTCFullYear();
+	const sameMonth = sameYear && a.getUTCMonth() === b.getUTCMonth();
+	const first =
+		unit === "month" && sameYear
+			? formatParts(a, { month: "long" })
+			: unit === "day" && sameMonth
+				? formatParts(a, { day: "numeric" })
+				: unit === "day" && sameYear
+					? formatParts(a, { day: "numeric", month: "long" })
+					: formatDate(a, unit);
+	return `${first} to ${last}`;
+}
+
+// Compare a value with a reference value, eg. "higher than"
+// threshold is relative (eg. 0.05 means values within 5% of ref are the same)
+export function compareTo(value, ref, options = {}) {
+	const { threshold = 0, texts = ["higher than", "the same as", "lower than"] } = options;
+	const diff = +value - +ref;
+	const relative = +ref === 0 ? diff : diff / Math.abs(+ref);
+	return Math.abs(relative) <= threshold ? texts[1] : diff > 0 ? texts[0] : texts[2];
+}

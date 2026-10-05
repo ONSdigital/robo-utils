@@ -1,6 +1,69 @@
 import { describe, expect, test } from "vitest";
 import MagicArray from "../src/magic-array.js";
+import MagicNumber from "../src/magic-number.js";
+import { csvParse } from "../src/functions.js";
 import { places, names } from "./setup.js";
+
+describe("MagicArray.get() and lookup", () => {
+	const leeds = places.get("Leeds");
+
+	test.each([
+		["MagicArray.from", () => MagicArray.from(places)],
+		["new MagicArray", () => new MagicArray(...places.trim(5), leeds)],
+		[".filter()", () => places.filter((d) => d.areanm.startsWith("L"))],
+		[".slice()", () => places.slice()],
+		["filterBy", () => places.filterBy("areanm", "Leeds")],
+		["remove", () => places.remove(places.get("Rutland"))],
+		["top", () => places.top("population_2011", 3)],
+		["bottom", () => places.bottom("population_2011", 400)],
+		["trim", () => places.sortBy("population_2011", "descending").trim(2)],
+		["add", () => places.trim(1).add(leeds)]
+	])("works on arrays from %s", (_, make) => {
+		const arr = make();
+		expect(arr.get("Leeds")).toBe(leeds);
+		expect(arr.get(leeds.areacd)).toBe(leeds);
+		expect(arr.lookup.Leeds).toBe(leeds);
+	});
+
+	test("detects column keys from the first row", () => {
+		const arr = places.filter(() => true);
+		expect([arr.codeKey, arr.nameKey, arr.parentKey]).toEqual(["areacd", "areanm", "parentcd"]);
+	});
+
+	test("updates after items are added or removed in place", () => {
+		const arr = places.trim(1);
+		expect(arr.get("Leeds")).toBeUndefined();
+		arr.push(leeds);
+		expect(arr.get("Leeds")).toBe(leeds);
+		arr.pop();
+		expect(arr.get("Leeds")).toBeUndefined();
+	});
+
+	test("refreshProps() rebuilds after items are replaced in place", () => {
+		const arr = places.trim(1);
+		arr[0] = leeds;
+		arr.refreshProps();
+		expect(arr.get("Leeds")).toBe(leeds);
+	});
+
+	test("lookup and column keys can still be set", () => {
+		const arr = places.trim(2);
+		arr.lookup = { custom: leeds };
+		expect(arr.get("custom")).toBe(leeds);
+		arr.nameKey = "areacd";
+		expect(arr.get("Leeds")).toBeUndefined();
+		expect(arr.get(arr[0].areacd)).toBe(arr[0]);
+	});
+
+	test("lookup and column keys are not enumerable", () => {
+		expect(Object.keys(places.trim(2))).toEqual(["0", "1"]);
+	});
+
+	test("empty arrays have an empty lookup", () => {
+		expect(new MagicArray().get("Leeds")).toBeUndefined();
+		expect(new MagicArray().codeKey).toBeUndefined();
+	});
+});
 
 describe("MagicArray.top() / bottom() / remove()", () => {
 	test("top two places by population plus Rutland", () => {
@@ -47,6 +110,55 @@ describe("MagicArray.getRank()", () => {
 		expect(places.getRank(places.get("Birmingham"), "population_2011").toWords("ordinal")).toBe(
 			"first"
 		);
+	});
+});
+
+describe("MagicArray.getRankWithTies()", () => {
+	// B and C are tied on 20
+	const rows = MagicArray.from(
+		csvParse("areacd,areanm,v\nE1,A,10\nE2,B,20\nE3,C,20\nE4,D,5\nE5,E,")
+	);
+
+	test.each([
+		["A", 3, [], "the third highest"], // two places are higher
+		["B", 1, ["E3"], "the joint highest"],
+		["C", 1, ["E2"], "the joint highest"],
+		["D", 4, [], "the fourth highest"]
+	])("%s is ranked %i, tied with %j", (name, rank, ties, text) => {
+		const result = rows.getRankWithTies(rows.get(name), "v");
+		expect(result).toBeInstanceOf(MagicNumber);
+		expect(+result).toBe(rank);
+		expect(result.isTied).toBe(ties.length > 0);
+		expect(result.ties).toEqual(ties);
+		expect(result.describe()).toBe(text);
+	});
+
+	test("ascending order with a custom label", () => {
+		const result = rows.getRankWithTies(rows.get("B"), "v", "ascending");
+		expect([+result, result.isTied, result.ties]).toEqual([3, true, ["E3"]]);
+		expect(result.describe("smallest")).toBe("the joint third smallest");
+		expect(rows.getRankWithTies(rows.get("D"), "v", "ascending").describe("smallest")).toBe(
+			"the smallest"
+		);
+	});
+
+	test("can be used like a number", () => {
+		const result = rows.getRankWithTies(rows.get("A"), "v");
+		expect(result.toWords("ordinal")).toBe("third");
+		expect(result + 1).toBe(4);
+		expect(result > 2).toBe(true);
+		expect(JSON.stringify({ rank: result })).toBe('{"rank":3}');
+	});
+
+	test("matches getRank when there are no ties", () => {
+		for (const place of places.trim(20)) {
+			expect(+places.getRankWithTies(place, "population_2011")).toBe(
+				+places.getRank(place, "population_2011")
+			);
+		}
+		expect(
+			places.getRankWithTies(places.get("Leeds"), "population_2011").describe("largest")
+		).toBe("the second largest");
 	});
 });
 

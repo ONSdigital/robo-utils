@@ -1,4 +1,13 @@
-import { format, toWords, round, abs } from "./functions.js";
+import {
+	format,
+	toWords,
+	round,
+	abs,
+	approx,
+	toFraction,
+	compareTo,
+	describeChange
+} from "./functions.js";
 
 export default class MagicNumber extends Number {
 	format(str = ",", si = "long") {
@@ -11,6 +20,18 @@ export default class MagicNumber extends Number {
 		return abs(this);
 	}
 	round(dp) {
-		return round(this, dp);
+		return new MagicNumber(round(this, dp));
+	}
+	approx(sf = 2, options = {}) {
+		return approx(this, sf, options);
+	}
+	toFraction(mode = "in", denominators) {
+		return toFraction(this, mode, denominators);
+	}
+	compareTo(ref, options = {}) {
+		return compareTo(this, ref, options);
+	}
+	describeChange(to, options = {}) {
+		return describeChange(this, to, options);
 	}
 }

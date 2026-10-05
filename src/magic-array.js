@@ -6,19 +6,31 @@ import {
 	descending,
 	addToArray,
 	removeFromArray,
+	describeRank,
+	getCode,
 	getProps,
 	makeLookup
 } from "./functions.js";
 
-export default class MagicArray extends Array {
-	constructor(...items) {
-		super(...items);
-		if (items?.length) {
-			const props = getProps(items?.[0]);
-			for (const key of Object.keys(props)) this[key] = props[key];
-			this.lookup = makeLookup(items, this?.codeKey, this?.nameKey);
-		}
+// Lookup and column keys are worked out when first used (and again if the length changes),
+// so they also work for arrays created by built-in methods like .filter() and .slice()
+const state = new WeakMap();
+const getState = (arr) => state.get(arr) ?? state.set(arr, {}).get(arr);
+
+// A rank that can be used as a number, with details of any ties
+class MagicRank extends MagicNumber {
+	constructor(rank, ties = []) {
+		super(rank);
+		this.isTied = ties.length > 0;
+		this.ties = ties;
 	}
+	// eg. "the joint second highest"
+	describe(label = "highest") {
+		return describeRank(this, label, this.isTied);
+	}
+}
+
+export default class MagicArray extends Array {
 	static from(iterable, mapFn, thisArg) {
 		// This method allows for the creation of a MagicArray from very large regular JS arrays
 		const array = Array.from(iterable, mapFn, thisArg);
@@ -27,19 +39,45 @@ export default class MagicArray extends Array {
 		for (let i = 0; i < array.length; i++) {
 			result[i] = array[i];
 		}
-
-		const props = getProps(result?.[0]);
-		for (const key of Object.keys(props)) result[key] = props[key];
-		result.lookup = makeLookup(result, result?.codeKey, result?.nameKey);
 		return result;
+	}
+	get codeKey() {
+		return getState(this).codeKey ?? getProps(this[0]).codeKey;
+	}
+	set codeKey(key) {
+		getState(this).codeKey = key;
+		delete getState(this).lookup;
+	}
+	get nameKey() {
+		return getState(this).nameKey ?? getProps(this[0]).nameKey;
+	}
+	set nameKey(key) {
+		getState(this).nameKey = key;
+		delete getState(this).lookup;
+	}
+	get parentKey() {
+		return getState(this).parentKey ?? getProps(this[0]).parentKey;
+	}
+	set parentKey(key) {
+		getState(this).parentKey = key;
+	}
+	get lookup() {
+		const s = getState(this);
+		if (!s.lookup || s.length !== this.length) {
+			s.lookup = makeLookup(this, this.codeKey, this.nameKey);
+			s.length = this.length;
+		}
+		return s.lookup;
+	}
+	set lookup(lookup) {
+		Object.assign(getState(this), { lookup, length: this.length });
 	}
 	get(key) {
 		return this.lookup[key];
 	}
+	// Re-detect column keys and rebuild the lookup (eg. after replacing items in place)
 	refreshProps() {
-		const props = getProps(this?.[0]);
-		for (const key of Object.keys(props)) this[key] = props[key];
-		this.lookup = makeLookup(this, this?.codeKey, this?.nameKey);
+		state.delete(this);
 	}
 	sortBy(key, order = "ascending") {
 		return order === "ascending" ? this.ascending(key) : this.descending(key);
@@ -57,6 +95,18 @@ export default class MagicArray extends Array {
 	getRank(item, key, order = "descending") {
 		const sorted = this.sortBy(key, order);
 		return new MagicNumber(sorted.map((d) => d[key]).indexOf(item[key]) + 1);
+	}
+	// Rank counting tied values as equal (1, 1, 3), with the codes of any other tied items
+	getRankWithTies(item, key, order = "descending") {
+		const value = +item[key];
+		const rows = this.filter((d) => d[key] != null);
+		const better = rows.filter((d) =>
+			order === "descending" ? +d[key] > value : +d[key] < value
+		);
+		const ties = rows
+			.filter((d) => +d[key] === value && getCode(d) !== getCode(item))
+			.map((d) => getCode(d));
+		return new MagicRank(better.length + 1, ties);
 	}
 	add(items) {
 		return addToArray(MagicArray.from(this), items);

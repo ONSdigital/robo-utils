@@ -26,5 +26,12 @@ export {
 	descending,
 	aAn,
 	pluralise,
-	singularise
+	singularise,
+	describeChange,
+	approx,
+	toFraction,
+	describeRank,
+	formatDate,
+	formatPeriod,
+	compareTo
 } from "./src/functions.js";

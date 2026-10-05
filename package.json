@@ -6,8 +6,8 @@
 	"type": "module",
 	"scripts": {
 		"test": "vitest",
-		"lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. .",
-		"format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
+		"lint": "prettier --ignore-path .gitignore --ignore-path .prettierignore --check --plugin-search-dir=. .",
+		"format": "prettier --ignore-path .gitignore --ignore-path .prettierignore --write --plugin-search-dir=. ."
 	},
 	"repository": {
 		"type": "git",

@@ -13,6 +13,18 @@ describe("toWords()", () => {
 	});
 });
 
+describe("toList()", () => {
+	test.each([
+		[["red", "green", "blue"], undefined, undefined, "red, green and blue"],
+		[["red", "green", "blue"], null, [", ", " or "], "red, green or blue"],
+		[["red"], undefined, undefined, "red"],
+		[[{ name: "A" }, { name: "B" }], "name", undefined, "A and B"],
+		[[{ name: "a" }, { name: "b" }], (d) => d.name.toUpperCase(), undefined, "A and B"]
+	])("toList(%j, %s, %j) is %j", (array, key, separator, expected) => {
+		expect(robo.toList(array, key, separator)).toBe(expected);
+	});
+});
+
 describe("breaksToWords()", () => {
 	test("-1 is less than 0", () => {
 		expect(robo.breaksToWords(-1)).toEqual("less");
@@ -44,6 +56,17 @@ describe("round()", () => {
 
 	test("round(123.4567, -2) should return 100", () => {
 		expect(robo.round(123.4567, -2)).toBe(100);
+	});
+
+	test("accepts MagicNumbers", () => {
+		expect(robo.round(n(123.4567), 2)).toBe(123.46);
+	});
+
+	test("MagicNumber.round() returns a MagicNumber", () => {
+		const value = n(1234.567).round(-2);
+		expect(value).toBeInstanceOf(MagicNumber);
+		expect(+value).toBe(1200);
+		expect(value.format()).toBe("1,200");
 	});
 });
 
@@ -412,5 +435,149 @@ describe("pluralise() / singularise()", () => {
 
 	test("singularise('people') should return 'person'", () => {
 		expect(robo.singularise("people")).toBe("person");
+	});
+});
+
+// Values as parsed from a CSV (MagicNumber), as templates receive them
+const n = (value) => robo.csvParse(`v\n${value}`)[0].v;
+
+describe("describeChange()", () => {
+	test.each([
+		[100, 105.2, {}, "increased by 5.2%"],
+		[100, 94, {}, "decreased by 6.0%"],
+		[100, 100, {}, "was unchanged"],
+		[100, 100.01, {}, "was unchanged"], // rounds to 0.0%
+		[0, 5, {}, "increased"], // percentage change from zero is undefined
+		[1000, 2200, { type: "absolute" }, "increased by 1,200"],
+		[21.3, 22.3, { type: "pp" }, "increased by 1.0 percentage point"],
+		[21.3, 24.8, { type: "pp" }, "increased by 3.5 percentage points"],
+		[100, 112.34, { str: ".0f" }, "increased by 12%"],
+		[100, 100.5, { threshold: 1 }, "was unchanged"],
+		[100, 90, { texts: ["rose", "fell", "was flat"] }, "fell by 10.0%"]
+	])("describeChange(%s, %s, %j) is %j", (from, to, options, expected) => {
+		expect(robo.describeChange(n(from), n(to), options)).toBe(expected);
+		expect(robo.describeChange(from, to, options)).toBe(expected);
+	});
+
+	test("returns an empty string for missing values", () => {
+		expect(robo.describeChange(null, n(5))).toBe("");
+		expect(robo.describeChange(n(5), n("NaN"))).toBe("");
+	});
+
+	test("is available as a MagicNumber method", () => {
+		expect(n(100).describeChange(n(110))).toBe("increased by 10.0%");
+	});
+});
+
+describe("approx()", () => {
+	test.each([
+		[5.97, 2, "almost 6"],
+		[6, 2, "6"],
+		[1234, 2, "just over 1,200"],
+		[99999, 2, "almost 100,000"],
+		[1030000, 2, "just over 1 million"],
+		[1520000000, 2, "just over 1.5 billion"],
+		[46, 1, "around 50"],
+		[48.2, 1, "almost 50"],
+		[0.0123, 2, "just over 0.012"],
+		[0, 2, "0"]
+	])("approx(%s, %s) is %j", (value, sf, expected) => {
+		expect(robo.approx(n(value), sf)).toBe(expected);
+		expect(n(value).approx(sf)).toBe(expected);
+	});
+
+	test("hedge words and threshold can be changed", () => {
+		const options = { texts: ["just under", "about", "just over"], threshold: 0.001 };
+		expect(robo.approx(5.97, 2, options)).toBe("about 6");
+		expect(robo.approx(5.999, 2, options)).toBe("just under 6");
+	});
+});
+
+describe("toFraction()", () => {
+	test.each([
+		[0.21, "one in five", "a fifth"],
+		[0.5, "one in two", "half"],
+		[0.45, "one in two", "half"], // ties go to the simpler fraction
+		[0.33, "one in three", "a third"],
+		[0.66, "two in three", "two-thirds"],
+		[0.4, "two in five", "two-fifths"],
+		[0.75, "three in four", "three-quarters"],
+		[0.7, "seven in 10", "seven-tenths"],
+		[0.05, "one in 20", "one in 20"] // small proportions are always "one in x"
+	])("toFraction(%s) is %j or %j", (value, inWords, fraction) => {
+		expect(robo.toFraction(n(value))).toBe(inWords);
+		expect(robo.toFraction(n(value), "fraction")).toBe(fraction);
+		expect(n(value).toFraction("fraction")).toBe(fraction);
+	});
+
+	test("custom denominators", () => {
+		expect(robo.toFraction(0.45, "in", [2, 3, 4, 5, 9, 10])).toBe("four in nine");
+	});
+
+	test.each([0, 1, -0.5, 1.5, null])("returns an empty string for %s", (value) => {
+		expect(robo.toFraction(value)).toBe("");
+	});
+});
+
+describe("describeRank()", () => {
+	test.each([
+		[1, false, "the highest"],
+		[1, true, "the joint highest"],
+		[2, false, "the second highest"],
+		[3, true, "the joint third highest"],
+		[12, false, "the 12th highest"]
+	])("describeRank(%s, 'highest', %s) is %j", (rank, tied, expected) => {
+		expect(robo.describeRank(n(rank), "highest", tied)).toBe(expected);
+	});
+
+	test("custom label", () => {
+		expect(robo.describeRank(2, "largest")).toBe("the second largest");
+	});
+});
+
+describe("formatDate()", () => {
+	test.each([
+		[n("2024-03-04"), "day", "4 March 2024"],
+		["2024-03-04", "month", "March 2024"],
+		[new Date(Date.UTC(2024, 2, 4)), "year", "2024"],
+		[n(2019), "year", "2019"], // a year column is parsed as a number
+		[n(2019), "day", "1 January 2019"]
+	])("formatDate(%s, %j) is %j", (date, unit, expected) => {
+		expect(robo.formatDate(date, unit)).toBe(expected);
+	});
+
+	test("throws for an invalid unit", () => {
+		expect(() => robo.formatDate("2024-03-04", "week")).toThrow(
+			"Unit must be 'day', 'month' or 'year'."
+		);
+	});
+});
+
+describe("formatPeriod()", () => {
+	test.each([
+		[n(2010), n(2020), "year", "2010 to 2020"],
+		[2020, 2020, "year", "2020"],
+		["2024-01-01", "2024-03-01", "month", "January to March 2024"],
+		["2023-12-01", "2024-02-01", "month", "December 2023 to February 2024"],
+		["2024-03-04", "2024-03-15", "day", "4 to 15 March 2024"],
+		["2024-03-04", "2024-06-15", "day", "4 March to 15 June 2024"],
+		["2023-12-30", "2024-01-02", "day", "30 December 2023 to 2 January 2024"]
+	])("formatPeriod(%s, %s, %j) is %j", (start, end, unit, expected) => {
+		expect(robo.formatPeriod(start, end, unit)).toBe(expected);
+	});
+});
+
+describe("compareTo()", () => {
+	test.each([
+		[105, 100, {}, "higher than"],
+		[100, 100, {}, "the same as"],
+		[95, 100, {}, "lower than"],
+		[103, 100, { threshold: 0.05 }, "the same as"],
+		[106, 100, { threshold: 0.05 }, "higher than"],
+		[1, 0, {}, "higher than"],
+		[97, 100, { threshold: 0.05, texts: ["above", "similar to", "below"] }, "similar to"]
+	])("compareTo(%s, %s, %j) is %j", (value, ref, options, expected) => {
+		expect(robo.compareTo(n(value), n(ref), options)).toBe(expected);
+		expect(n(value).compareTo(n(ref), options)).toBe(expected);
 	});
 });
