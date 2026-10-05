@@ -1,0 +1,41 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+`@onsvisual/robo-utils` is a plain-JavaScript ESM library (no build step, no TypeScript) of Natural Language Generation helpers for ONS semi-automated "robo-journalism" area reports. It is consumed by Pug templates in downstream projects ([robo-article](https://github.com/ONSvisual/robo-article), [robo-embed](https://github.com/ONSvisual/robo-embed), [robo-editor](https://onsdigital.github.io/robo-editor/)) and must work in both browsers and Node. Runtime dependencies are declared as `peerDependencies`, not `dependencies`.
+
+## Commands
+
+```bash
+npm test                          # vitest in watch mode
+npx vitest run                    # run all tests once
+npx vitest run -t "Birmingham"    # run tests whose name matches a pattern
+npm run lint                      # prettier --check
+npm run format                    # prettier --write
+```
+
+Formatting (`.prettierrc`): tabs (width 4), print width 100, no trailing commas.
+
+All tests live in `tests/all.test.js` and run against the fixture CSV in `tests/data.js` (2011 census local-authority data), loaded as `MagicArray.from(robo.csvParse(data_raw))`. Most tests use `places` (LAs filtered by code prefix `E06/E07/E08/E09/W06`, sorted by name).
+
+## Architecture
+
+The public API is whatever `index.mjs` re-exports — a new function in `src/functions.js` is not public until it is added there.
+
+**The "magic" type system.** The core idea is that parsed data carries chainable NLG methods:
+
+- `csvParse` (wraps d3-dsv) uses a custom `autoType` (adapted from `d3.autoType`) that turns each row into a `MagicObject`, numeric cells into `MagicNumber`, ISO-ish strings into `Date`, and cells containing `|` (or columns ending `_array`) into arrays.
+- `MagicArray` (extends `Array`) wraps a list of rows. On construction / `MagicArray.from()` / `refreshProps()` it inspects the **first item** to detect `codeKey`, `nameKey`, `parentKey` and builds a `lookup` map keyed by both code and name, which is what `.get("Hartlepool")` or `.get("E06000001")` uses. Methods that return arrays (`ascending`, `top`, `between`, `add`, …) rebuild via `MagicArray.from` so lookups stay valid.
+- Column detection is heuristic (`getCodeKey`/`getNameKey`/`getParentKey` in `functions.js`): preferred names like `areacd`/`areanm`/`parentcd`, then any key ending `cd`/`nm`, else the first key. `MagicObject.getCountry()` maps the first letter of the code (E/N/S/W) to a country code.
+- The class files are thin wrappers that delegate to the free functions in `src/functions.js`; `functions.js` and the class modules import each other circularly, so keep class modules free of top-level code that calls into `functions.js` at import time.
+
+**Formatting.** `format()` extends d3-format with negative decimal places (e.g. `",.-2f"` rounds to hundreds) and replaces SI suffixes with words (`"long"`: "thousand"/"million"…, otherwise `mn`/`bn`/`tn`), using a UK `£` locale. `toWords` uses the vendored `src/number-to-words.js`; numbers above `threshold` (default 9) stay as digits.
+
+**Template rendering.** `renderHTML` and `renderJSON` render a Pug template (Pug is passed in, defaulting to `window.pug`) with `place`/`row`, `places`/`rows`, `lookup`, `MagicArray` and every export of `functions.js` in scope, then apply regex post-fixes (remove spaces around `%`/`£`, add spaces after closing inline tags, set `<mark>` text colour for contrast against its background colour). `renderJSON` additionally:
+- rewrites `.toData(...)` calls in the template source to add a `"stringify"` mode before rendering;
+- parses the HTML with node-html-parser into `{ sections, place, region, ctry, notes, error }`, where each `<section>` becomes an object (`id`, `class`→`type`, nested `sections`, `content` HTML), `<prop class="x">` children become fields (`prop.data` is JSON-parsed; `|`-separated text becomes an array — in Pug, `prop.years #{a}|#{b}`), and top-level HTML comments become `notes`;
+- catches Pug errors and returns them in `error` rather than throwing.
+
+The README doubles as API reference; update it when changing public signatures.
