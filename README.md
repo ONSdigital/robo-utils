@@ -275,13 +275,6 @@ Add or remove items from array based on code matching.
 
 ## Template Rendering
 
-### renderHTML(template, place, places, lookup, plaintext = false, pug = window.pug)
-
-Render Pug template to HTML with data injection.
-
-- Input: Pug template, place data, places array, lookup object, plaintext flag, Pug instance
-- Output: Rendered HTML string with enhanced formatting
-
 ### renderJSON(template, place, places, lookup, pug = window.pug)
 
 Render Pug template to structured JSON.
