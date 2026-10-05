@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm test                          # vitest in watch mode
 npx vitest run                    # run all tests once
+npx vitest run tests/magic-array.test.js   # run one test file
 npx vitest run -t "Birmingham"    # run tests whose name matches a pattern
 npm run lint                      # prettier --check
 npm run format                    # prettier --write
@@ -18,7 +19,7 @@ npm run format                    # prettier --write
 
 Formatting (`.prettierrc`): tabs (width 4), print width 100, no trailing commas.
 
-All tests live in `tests/all.test.js` and run against the fixture CSV in `tests/data.js` (2011 census local-authority data), loaded as `MagicArray.from(robo.csvParse(data_raw))`. Most tests use `places` (LAs filtered by code prefix `E06/E07/E08/E09/W06`, sorted by name).
+Test files mirror the source: tests for `src/<module>.js` go in `tests/<module>.test.js`, with one `describe` block per function or method. Data-driven tests use `places` from `tests/setup.js`: the 2011 census CSV in `tests/data.js`, parsed into a `MagicArray` and filtered to local authorities (code prefixes `E06/E07/E08/E09/W06`), sorted by name. `setup.js` also exports `names()`, which maps a result to its `areanm` values for readable assertions.
 
 ## Architecture
 
