@@ -57,6 +57,29 @@ describe("format()", () => {
 	});
 });
 
+describe("toData()", () => {
+	const rows = [
+		{ areacd: "E1", areanm: "Foo", v: 1 },
+		{ areacd: "E2", areanm: "Bar", v: 2 }
+	];
+
+	test("returns an array that converts to a JSON string", () => {
+		const data = robo.toData(rows, { x: "v", y: "areanm" });
+		expect(data).toEqual([
+			{ x: 1, y: "Foo" },
+			{ x: 2, y: "Bar" }
+		]);
+		expect(String(data)).toBe(JSON.stringify(data));
+		expect(Object.keys(data)).toEqual(["0", "1"]); // toString is not enumerable
+	});
+
+	test("stringify and protect modes return strings", () => {
+		const json = '[{"y":"Foo"},{"y":"Bar"}]';
+		expect(robo.toData(rows, { y: "areanm" }, "stringify")).toBe(json);
+		expect(robo.toData(rows, { y: "areanm" }, "protect")).toBe(`§${json}§`);
+	});
+});
+
 describe("autoType()", () => {
 	const parse = (value, key = "v") => robo.autoType({ [key]: value })[key];
 

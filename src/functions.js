@@ -196,6 +196,11 @@ export function getParent(place) {
 	return place[parentKey];
 }
 
+export function getCountry(place) {
+	const countries = { E: "E92000001", N: "N92000002", S: "S92000003", W: "W92000004" };
+	return countries[String(getCode(place))[0]];
+}
+
 export function moreLess(diff, texts = ["more", "less", "same"]) {
 	return diff > 0 ? texts[0] : diff < 0 ? texts[1] : texts[2];
 }
@@ -213,6 +218,10 @@ export function breaksToWords(value, breaks = [0], texts = ["less", "more"], qua
 export function capitalise(str) {
 	return str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 }
+
+// Array returned by toData() serialises to JSON when Pug outputs it (eg. prop.data= places.toData(...))
+const asData = (data) =>
+	Object.defineProperty(data, "toString", { value: () => JSON.stringify(data) });
 
 export function toData(arr, props, mode = null) {
 	try {
@@ -251,14 +260,14 @@ export function toData(arr, props, mode = null) {
 			? `§${JSON.stringify(data)}§`
 			: mode === "stringify"
 				? JSON.stringify(data)
-				: data;
+				: asData(data);
 	} catch (err) {
 		console.warn("Could not generate data", { arr, props }, err);
 		return mode === "protect"
 			? `§${JSON.stringify([])}§`
 			: mode === "stringify"
 				? JSON.stringify([])
-				: [];
+				: asData([]);
 	}
 }
 

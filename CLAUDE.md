@@ -36,8 +36,11 @@ The public API is whatever `index.mjs` re-exports — a new function in `src/fun
 
 **Template rendering.** `renderJSON` renders a Pug template (Pug is passed in, defaulting to `window.pug`) with `place`/`row`, `places`/`rows`, `lookup`, `MagicArray` and every export of `functions.js` in scope, then applies regex post-fixes (remove spaces around `%`/`£`, add spaces after closing inline tags, set `<mark>` text colour for contrast against its background colour). It also:
 
-- rewrites `.toData(...)` calls in the template source to add a `"stringify"` mode before rendering;
-- parses the HTML with node-html-parser into `{ sections, place, region, ctry, notes, error }`, where each `<section>` becomes an object (`id`, `class`→`type`, nested `sections`, `content` HTML), `<prop class="x">` children become fields (`prop.data` is JSON-parsed; `|`-separated text becomes an array — in Pug, `prop.years #{a}|#{b}`), and top-level HTML comments become `notes`;
+- parses the HTML with node-html-parser into `{ sections, place, region, ctry, notes, error }`, where each `<section>` becomes an object (`id`, `class`→`type`, nested `sections`, `content` HTML), `<prop class="x">` children become fields (`prop.data` is JSON-parsed; `|`-separated text becomes an array — in Pug, `prop.years #{a}|#{b}`), and top-level HTML comments (Pug `//`, not `//-`) become `notes`;
 - catches Pug errors and returns them in `error` rather than throwing.
+
+`prop.data= places.toData(...)` works because `toData()` returns an array with a non-enumerable `toString` that outputs JSON. Calling an array method on the result (eg. `.slice()`) returns a plain array that loses this, so it renders as `[object Object]` and `error` reports invalid JSON.
+
+To check rendering changes against real templates, the robo-article, robo-embed and robo-scrolly repos (`demo-data/`) and robo-editor (`public/data/`), if checked out alongside this one, have `template.pug` + `data.csv` pairs (`robo-editor`'s `template_nlg.pug` fails on all versions because it relies on RosaeNLG mixins).
 
 The README doubles as API reference; update it when changing public signatures.

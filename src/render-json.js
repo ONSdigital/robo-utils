@@ -5,16 +5,22 @@ import MagicArray from "./magic-array.js";
 
 const parse = parser?.default?.parse ? parser.default.parse : parser?.parse ? parser.parse : parser;
 
-const unescapeHTML = (escaped) =>
-	escaped
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">")
-		.replace(/&quot;/g, '"')
-		.replace(/&#039;/g, "'")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">")
-		.replace(/(?<=\d.)\s(?=\d)/g, "");
+const COMMENT_NODE = 8;
+
+// Add a black or white text colour to <mark> tags for contrast with their background colour
+function setMarkColor(tag) {
+	const style = tag.match(/style="([^"]*)"/)?.[1];
+	const background = style?.match(/background-color:\s*([^;]+)/)?.[1].trim();
+	if (!background || /(^|[;\s])color\s*:/.test(style)) return tag;
+	const rgb = parseColor(background).rgb;
+	if (!rgb) return tag;
+	const color = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 > 125 ? "black" : "white";
+	const newStyle = style.replace(
+		/background-color:\s*[^;]+;?/,
+		(match) => `${match.replace(/;$/, "")}; color: ${color};`
+	);
+	return tag.replace(`style="${style}"`, () => `style="${newStyle}"`);
+}
 
 // Cycle through LAs (and null for "no area selected")
 export default function renderJSON(template, place, places, lookup, pug = window.pug) {
@@ -26,14 +32,8 @@ export default function renderJSON(template, place, places, lookup, pug = window
 	let error;
 
 	try {
-		// Fix .toData() functions
-		let funcs = template.match(/(?<=\.toData\().*?((?=\)\r\n)|(?=\)\n))/g);
-		if (Array.isArray(funcs)) {
-			funcs = Array.from(new Set(funcs));
-			funcs.forEach((f) => (template = template.replaceAll(f, `${f}, "stringify"`)));
-		}
-
 		// Render PUG template with data for selected LA
+		// (arrays returned by .toData() serialise themselves to JSON when output)
 		let sections_raw = pug.render(template, {
 			place,
 			places,
@@ -47,37 +47,17 @@ export default function renderJSON(template, place, places, lookup, pug = window
 		// Fix to remove spaces added between numbers and prefix/suffix symbols by Rosae
 		sections_raw = sections_raw.replace(/(?<=\d)\s+((?=%)|(?=p{2}))/g, "");
 		sections_raw = sections_raw.replace(/(?<=[£€\$])\s+(?=\d)/g, "");
-		// Fix to add spaces after closing </mark> </em> or <strong> tags unless followed by one of . , <
+		// Fix to add a space after closing inline tags when Pug has joined them to the next word
 		sections_raw = sections_raw.replace(
-			/((?<=<\/span>)|(?<=<\/mark>)|(?<=<\/strong>)|(?<=<\/em>)|(?<=<\/[abi]>))(?![\.,<:;])/g,
+			/(?<=<\/(?:span|mark|strong|em|a|b|i)>)(?=[^\s.,;:!?)\]}<'’%])/g,
 			" "
 		);
 
 		// Process <mark> tags for text colour contrast
-		// This might be better handled in the HTML parser
-		let marks = sections_raw.match(/<mark([^<]*?)>/g);
-		if (Array.isArray(marks)) {
-			marks = marks.filter(
-				(d, i, arr) => arr.indexOf(d) == i && d.includes("background-color")
-			);
-			if (marks[0]) {
-				let colors = marks.map((d) => d.match(/(?<=background-color:\s).+(?=[";])/)[0]);
-				colors.forEach((color) => {
-					let rgb = parseColor(color).rgb;
-					let text_color =
-						(rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 > 125
-							? "black"
-							: "white";
-					sections_raw = sections_raw.replaceAll(
-						`background-color: ${color}`,
-						`background-color: ${color}; color: ${text_color};`
-					);
-				});
-			}
-		}
+		sections_raw = sections_raw.replace(/<mark\b[^>]*>/g, setMarkColor);
 
 		// Process HTML output of Pug into structured JSON
-		let root = parse(sections_raw); // Convert HTML string into DOM-type object for parsing
+		let root = parse(sections_raw, { comment: true }); // Convert HTML string into DOM-type object for parsing
 
 		function parseSection(node) {
 			let obj = {};
@@ -88,31 +68,31 @@ export default function renderJSON(template, place, places, lookup, pug = window
 
 			// Loop through children (h2, p, subsections etc)
 			node.childNodes.forEach((child) => {
+				if (child.nodeType === COMMENT_NODE) return;
 				if (child.tagName == "SECTION") {
 					subsections.push(child);
 				} else if (child.tagName == "PROP" && child.getAttribute("class")) {
 					let prop = child.getAttribute("class");
 					if (prop === "data") {
-						obj[prop] = JSON.parse(unescapeHTML(child.innerText));
+						try {
+							obj[prop] = JSON.parse(child.text);
+						} catch (err) {
+							throw new Error(`prop.data is not valid JSON: ${err.message}`);
+						}
 					} else {
-						let val = child.innerText.includes("|")
-							? child.innerText.split("|")
+						obj[prop] = child.text.includes("|")
+							? child.text.split("|")
 							: child.innerHTML;
-						obj[prop] = val;
 					}
 				} else {
-					content += child.outerHTML;
+					content += child.toString();
 				}
 			});
 			if (content.length > 0) obj.content = content;
 
 			// If there are sub-sections (eg. for scrollers), process these similarly sections
-			// This could probably better be done recursively
 			if (subsections[0]) {
-				obj.sections = [];
-				subsections.forEach((sub) => {
-					obj.sections.push(parseSection(sub));
-				});
+				obj.sections = subsections.map(parseSection);
 			}
 			return obj;
 		}
@@ -131,23 +111,25 @@ export default function renderJSON(template, place, places, lookup, pug = window
 
 		// Push any top level HTML comments to the notes array
 		root.childNodes
-			.filter((child) => !child.getAttribute)
-			.forEach((node) => {
-				notes.push(node._rawText.replaceAll("<! --", "").replaceAll("-->", ""));
-			});
+			.filter((child) => child.nodeType === COMMENT_NODE)
+			.forEach((node) => notes.push(node.rawText.trim()));
 	} catch (err) {
 		error = err.toString();
 		console.warn(
-			`PUG error. No HTML generated for ${place ? place.getName("the") : `no area selected`}`,
+			`PUG error. No HTML generated for ${place ? functions.getName(place, "the") : `no area selected`}`,
 			err
 		);
 	}
 
 	// Build the data object to be saved to JSON
 	const data = { sections };
-	if (place) data.place = place;
-	if (place && lookup[place.getParent()]) data.region = lookup[place.getParent()];
-	if (place && lookup[place.getCountry()]) data.ctry = lookup[place.getCountry()];
+	if (place) {
+		data.place = place;
+		const region = lookup?.[functions.getParent(place)];
+		const ctry = lookup?.[functions.getCountry(place)];
+		if (region) data.region = region;
+		if (ctry) data.ctry = ctry;
+	}
 	if (notes[0]) data.notes = notes;
 	if (error) data.error = error;
 

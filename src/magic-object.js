@@ -2,6 +2,7 @@ import {
 	getName,
 	getCode,
 	getParent,
+	getCountry,
 	toData,
 	highestFromArray,
 	lowestFromArray
@@ -18,8 +19,7 @@ export default class MagicObject {
 		return getCode(this);
 	}
 	getCountry() {
-		const countries = { E: "E92000001", N: "N92000002", S: "S92000003", W: "W92000004" };
-		return countries[this.getCode()[0]];
+		return getCountry(this);
 	}
 	getParent() {
 		return getParent(this);
