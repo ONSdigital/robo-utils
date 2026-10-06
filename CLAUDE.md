@@ -41,6 +41,6 @@ The public API is whatever `index.mjs` re-exports — a new function in `src/fun
 
 `prop.data= places.toData(...)` works because `toData()` returns an array with a non-enumerable `toString` that outputs JSON. Calling an array method on the result (eg. `.slice()`) returns a plain array that loses this, so it renders as `[object Object]` and `error` reports invalid JSON.
 
-To check rendering changes against real templates, the robo-article, robo-embed and robo-scrolly repos (`demo-data/`) and robo-editor (`public/data/`), if checked out alongside this one, have `template.pug` + `data.csv` pairs (`robo-editor`'s `template_nlg.pug` fails on all versions because it relies on RosaeNLG mixins).
+To check rendering changes against real templates, the robo-article, robo-embed and robo-scrolly repos (`demo-data/`) and robo-editor (`static/data/`), if checked out alongside this one, have `template.pug` + `data.csv` pairs.
 
 `docs/api.md` is the API reference, and the README has only an overview and a few examples. `CHANGELOG.md` records changes that affect templates (it doubles as the migration guide for the robo-article/robo-embed/robo-editor repos); add an entry under the unreleased version for any behaviour change. When changing or adding a public function, update `docs/api.md`, and generate example outputs by running the code rather than writing them by hand.
